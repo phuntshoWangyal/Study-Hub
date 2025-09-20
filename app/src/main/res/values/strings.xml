@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">StudyHub</string>
+    <string name="title_activity_main_page">MainPage</string>
+    <string name="title_ranking">Ranking</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_classes">Add classes</string>
 </resources>
