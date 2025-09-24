@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyHub">
         <activity
+            android:name=".test"
+            android:exported="false" />
+        <activity
             android:name=".SettingsPage"
             android:exported="false" />
         <activity
@@ -21,7 +24,7 @@
             android:name=".MainPage"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginPage"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
