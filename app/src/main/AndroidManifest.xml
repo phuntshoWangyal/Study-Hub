@@ -12,11 +12,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyHub">
         <activity
-            android:name=".MainPage"
-            android:exported="false"
-            android:label="@string/title_activity_main_page" />
+            android:name=".test"
+            android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".SettingsPage"
+            android:exported="false" />
+        <activity
+            android:name=".RankingPage"
+            android:exported="false" />
+        <activity
+            android:name=".MainPage"
+            android:exported="false" />
+        <activity
+            android:name=".LoginPage"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

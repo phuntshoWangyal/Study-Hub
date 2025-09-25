@@ -3,7 +3,6 @@ package ca.unb.mobiledev.studyhub
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -20,8 +19,8 @@ class LoginPage : AppCompatActivity() {
             insets
         }
 
-        val activityTwoButton: Button = findViewById(R.id.loginButton)
-        activityTwoButton.setOnClickListener {
+        val loginButton: Button = findViewById(R.id.loginButton)
+        loginButton.setOnClickListener {
             val intent = Intent(this@LoginPage, MainPage::class.java)
             startActivity(intent)
         }

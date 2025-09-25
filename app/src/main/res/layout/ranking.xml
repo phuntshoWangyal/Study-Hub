@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainPage">
+    <LinearLayout
+        android:orientation = "vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity = "bottom"
+        tools:context= ".MainActivity"
+        android:background="@color/white"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:background="@color/red"
+            >
+
+            <TextView
+                android:id="@+id/ranking"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Welcome to Ranking Page"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/ranking_page"
+        android:layout_width = "match_parent"
+        android:layout_height = "match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation = "vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity = "bottom"
+            tools:context= ".MainActivity"
+            android:background="@color/white"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:orientation="horizontal"
+                android:background="@color/red"
+                >
+
+                <Button
+                    android:id="@+id/rankingButton"
+                    android:layout_width = "130dp"
+                    android:layout_height = "50dp"
+                    android:layout_gravity="start"
+                    android:backgroundTint="@color/red"
+                    android:text="@string/title_ranking"
+                    android:textSize="18sp"
+                    app:cornerRadius="0dp"
+                    >
+                </Button>
+
+
+                <ImageButton
+                    android:id="@+id/home_button"
+                    android:layout_width ="150dp"
+                    android:layout_height ="50dp"
+                    android:layout_gravity="center"
+                    android:background="@color/red"
+                    android:src="@drawable/ic_home_black_24dp"
+                />
+
+                <Button
+                    android:id="@+id/settingsButton"
+                    android:layout_width ="130dp"
+                    android:layout_height ="50dp"
+                    android:layout_gravity="end"
+                    android:backgroundTint="@color/red"
+                    android:text="@string/title_settings"
+                    android:textSize="18sp"
+                    app:cornerRadius="0dp">
+                </Button>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

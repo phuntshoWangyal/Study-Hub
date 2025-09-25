@@ -11,7 +11,7 @@
 
         android:orientation = "vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity = "center"
         tools:context= ".MainActivity"
         android:background="@color/white"
@@ -26,6 +26,7 @@
             >
 
             <ImageView
+                android:contentDescription="UNB logo"
                 android:id="@+id/unblogo"
                 android:layout_width="match_parent"
                 android:layout_height="198dp"
@@ -38,10 +39,12 @@
                 android:id="@+id/loginText"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Login"
+                android:text="@string/title_login"
                 android:textColor="@color/black"
                 android:textAlignment="center"
-                android:textSize="36sp"></TextView>
+                android:textSize="36sp">
+
+            </TextView>
 
             <EditText
                 android:layout_width="match_parent"
@@ -65,7 +68,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
                 android:backgroundTint="@color/red"
-                android:text="Login"
+                android:text="@string/title_login"
                 android:textSize="18sp">
 
             </Button>
