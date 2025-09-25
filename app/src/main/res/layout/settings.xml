@@ -16,7 +16,26 @@
         tools:context= ".MainActivity"
         android:background="@color/white"
         >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:orientation="horizontal"
+            android:background="@color/red"
+            >
 
+            <TextView
+                android:id="@+id/loginText"
+                android:layout_width="match_parent"
+                android:layout_height="61dp"
+                android:text="Test"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:textSize="36sp">
+
+            </TextView>
+
+        </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
