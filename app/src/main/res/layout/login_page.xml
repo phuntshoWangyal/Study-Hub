@@ -5,117 +5,126 @@
     android:id="@+id/login_page"
     android:layout_width = "match_parent"
     android:layout_height = "match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    >
 
-    <LinearLayout
 
-        android:orientation = "vertical"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity = "center"
-        tools:context= ".MainActivity"
-        android:background="@color/white"
+        android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
         >
-
-        <LinearLayout
+        <ImageView
+            android:contentDescription="@null"
+            android:id="@+id/unblogo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/background">
+
+        </ImageView>
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
             android:orientation="vertical"
-            android:padding="24dp"
-
+            android:gravity="center_vertical"
             >
+            <LinearLayout
 
-            <ImageView
-                android:contentDescription="UNB logo"
-                android:id="@+id/unblogo"
+                android:orientation = "vertical"
                 android:layout_width="match_parent"
-                android:layout_height="198dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/logo">
-
-            </ImageView>
-
-            <TextView
-                android:id="@+id/loginText"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="@string/title_login"
-                android:textColor="@color/black"
-                android:textAlignment="center"
-                android:textSize="36sp">
-
-            </TextView>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:hint="Enter Username">
-
-            </EditText>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:hint="Enter Password">
-
-            </EditText>
-
-            <Button
-                android:id="@+id/loginButton"
-                android:layout_width="100dp"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_login"
-                android:textSize="18sp">
-
-            </Button>
-            <Button
-                android:text="Forgot your password?"
-                android:layout_width="250dp"
-                android:layout_height = "50dp"
-                android:textSize="15sp"
-                android:backgroundTint="@color/white"
-                android:textColor="@color/grey"
-                android:layout_gravity="center"
+                android:layout_height="wrap_content"
+                android:gravity = "center"
+                tools:context= ".MainActivity"
+                android:padding="20dp"
                 >
 
-            </Button>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center">
+
+
+
+
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height = "wrap_content"
-                    android:textSize="15sp"
-                    android:textColor="@color/grey"
-                    android:layout_gravity="center"
-                    android:text="Don't have an account?"
-                    >
+                    android:id="@+id/loginText"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="@string/title_login"
+                    android:textColor="@color/black"
+                    android:textAlignment="center"
+                    android:textSize="36sp">
+
                 </TextView>
 
-                <Button
-                    android:id="@+id/SignUpButton"
+                <EditText
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/white"
-                    android:text="Sign Up"
-                    android:textColor="@color/bright_blue"
-                    android:textSize="15sp"
+                    android:layout_height="50dp"
+                    android:hint="Enter Username">
 
+                </EditText>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="20dp"
+                    android:hint="Enter Password">
+
+                </EditText>
+
+                <Button
+                    android:id="@+id/loginButton"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="@color/red"
+                    android:text="@string/title_login"
+                    android:textSize="18sp">
+
+                </Button>
+                <Button
+                    android:text="Forgot your password?"
+                    android:layout_width="250dp"
+                    android:layout_height = "50dp"
+                    android:textSize="15sp"
+                    android:backgroundTint="@color/white"
+                    android:textColor="@color/grey"
+                    android:layout_gravity="center"
                     >
 
                 </Button>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height = "wrap_content"
+                        android:textSize="15sp"
+                        android:textColor="@color/grey"
+                        android:layout_gravity="center"
+                        android:text="Don't have an account?"
+                        >
+                    </TextView>
+
+                    <Button
+                        android:id="@+id/SignUpButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/white"
+                        android:text="Sign Up"
+                        android:textColor="@color/bright_blue"
+                        android:textSize="15sp"
+
+                        >
+
+                    </Button>
+                </LinearLayout>
+
+
+
+
             </LinearLayout>
-
-
         </LinearLayout>
-
-
-    </LinearLayout>
+    </FrameLayout>
 </ScrollView>
 
