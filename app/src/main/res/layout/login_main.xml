@@ -44,6 +44,7 @@
                 android:textSize="36sp"></TextView>
 
             <EditText
+                android:id = "@+id/usernameTextField"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:hint="Enter Username">
@@ -51,6 +52,7 @@
             </EditText>
 
             <EditText
+                android:id="@+id/passwordTextField"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="20dp"
@@ -59,6 +61,7 @@
             </EditText>
 
             <Button
+                android:id = "@+id/loginButton"
                 android:layout_width="100dp"
                 android:layout_height="50dp"
                 android:layout_gravity="center"
@@ -69,6 +72,7 @@
 
             </Button>
             <Button
+                android:id="@+id/forgotPasswordButton"
                 android:text="Forgot your password?"
                 android:layout_width="250dp"
                 android:layout_height = "50dp"
@@ -85,6 +89,7 @@
                 android:orientation="horizontal"
                 android:layout_gravity="center">
                 <TextView
+                    android:id="@+id/signUpText"
                     android:layout_width="wrap_content"
                     android:layout_height = "wrap_content"
                     android:textSize="15sp"
@@ -95,7 +100,7 @@
                 </TextView>
 
                 <Button
-                    android:id="@+id/SignupButton"
+                    android:id="@+id/signupButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/white"
