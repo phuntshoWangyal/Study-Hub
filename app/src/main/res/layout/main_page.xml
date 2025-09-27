@@ -1,64 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_page"
-    android:layout_width = "match_parent"
-    android:layout_height = "match_parent"
-    android:fillViewport="true">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainPage">
 
-    <LinearLayout
-        android:orientation = "vertical"
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity = "bottom"
-        tools:context= ".MainActivity"
-        android:background="@color/white"
-        >
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:orientation="horizontal"
-
-            >
-
-            <Button
-                android:id="@+id/rankingButton"
-                android:layout_width="130dp"
-                android:layout_height="50dp"
-                android:layout_gravity="start"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_ranking"
-                android:textSize="18sp"
-                app:cornerRadius="0dp">
-            </Button>
-
-            <Button
-                android:id="@+id/classAddButton"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_classes"
-                android:textSize="18sp"
-                app:cornerRadius="0dp">
-            </Button>
-
-            <Button
-                android:id="@+id/settingsButton"
-                android:layout_width="130dp"
-                android:layout_height="50dp"
-                android:layout_gravity="end"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_settings"
-                android:textSize="18sp"
-                app:cornerRadius="0dp">
-            </Button>
-        </LinearLayout>
-
-    </LinearLayout>
-
-</ScrollView>
+        android:layout_marginBottom="-25dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/nav_menu"
+        android:scrollIndicators="left"/>
+</RelativeLayout>

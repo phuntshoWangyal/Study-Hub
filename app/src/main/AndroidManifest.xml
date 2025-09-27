@@ -12,12 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyHub">
         <activity
-            android:name=".SettingsPage"
-            android:exported="false" />
-        <activity
-            android:name=".RankingPage"
-            android:exported="false" />
-        <activity
             android:name=".MainPage"
             android:exported="false" />
         <activity
