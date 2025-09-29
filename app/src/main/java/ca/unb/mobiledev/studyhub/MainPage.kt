@@ -20,21 +20,21 @@ class MainPage : AppCompatActivity() {
         }
 
 
-        val rankingButton: Button = findViewById(R.id.rankingButton)
-        rankingButton.setOnClickListener {
-            val intent = Intent(this@MainPage, RankingPage::class.java)
-            startActivity(intent)
-        }
+//        val rankingButton: Button = findViewById(R.id.rankingButton)
+//        rankingButton.setOnClickListener {
+//            val intent = Intent(this@MainPage, RankingPage::class.java)
+//            startActivity(intent)
+//        }
 
-        val addClassButton: Button = findViewById(R.id.classAddButton)
-        addClassButton.setOnClickListener {
+//        val addClassButton: Button = findViewById(R.id.classAddButton)
+//        addClassButton.setOnClickListener {
+//
+//        }
 
-        }
-
-        val settingsButton: Button = findViewById(R.id.settingsButton)
-        settingsButton.setOnClickListener {
-            val intent = Intent(this@MainPage, SettingsPage::class.java)
-            startActivity(intent)
-        }
+//        val settingsButton: Button = findViewById(R.id.settingsButton)
+//        settingsButton.setOnClickListener {
+//            val intent = Intent(this@MainPage, SettingsPage::class.java)
+//            startActivity(intent)
+//        }
     }
 }

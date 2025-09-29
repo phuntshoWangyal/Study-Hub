@@ -11,53 +11,53 @@
     <LinearLayout
         android:orientation = "vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity = "bottom"
+        android:layout_height="match_parent"
         tools:context= ".MainActivity"
         android:background="@color/white"
         >
-
-        <LinearLayout
+        <com.google.android.material.appbar.MaterialToolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:orientation="horizontal"
-
+            android:background="@color/red"
+            app:navigationIcon="@drawable/baseline_arrow_back_24"
+            app:navigationIconTint="@color/white"
+            app:title="Courses"
+            app:titleTextColor="@color/white"
             >
 
-            <Button
-                android:id="@+id/rankingButton"
-                android:layout_width="130dp"
-                android:layout_height="50dp"
-                android:layout_gravity="start"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_ranking"
-                android:textSize="18sp"
-                app:cornerRadius="0dp">
-            </Button>
+        </com.google.android.material.appbar.MaterialToolbar>
 
-            <Button
-                android:id="@+id/classAddButton"
+
+
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Welcome 👋"
+                android:textColor="@color/blue_grey"
+                android:fontFamily="@font/poppins_light"
+                >
+            </TextView>
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_classes"
-                android:textSize="18sp"
-                app:cornerRadius="0dp">
-            </Button>
+                android:layout_height="wrap_content"
+                android:text="Phuntsho Wangyal"
+                android:textSize="20sp"
+                android:fontFamily="@font/poppins"
+                android:textStyle="bold"
+                >
+            </TextView>
 
-            <Button
-                android:id="@+id/settingsButton"
-                android:layout_width="130dp"
-                android:layout_height="50dp"
-                android:layout_gravity="end"
-                android:backgroundTint="@color/red"
-                android:text="@string/title_settings"
-                android:textSize="18sp"
-                app:cornerRadius="0dp">
-            </Button>
         </LinearLayout>
+
+
+
+
+
 
     </LinearLayout>
 
