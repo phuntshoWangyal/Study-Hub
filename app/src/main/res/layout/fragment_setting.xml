@@ -14,21 +14,20 @@
         <RelativeLayout
             android:id="@+id/backgroundBar"
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="140dp"
             android:background="@color/red">
             
             
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/profileImage"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person_black"
-            android:background="@color/white"
-            app:shapeAppearanceOverlay="@style/ImageStyle_Circle"
-            android:layout_marginVertical="15dp"
-            android:layout_centerHorizontal="true"
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profileImage"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person_black"
+                android:background="@color/white"
+                app:shapeAppearanceOverlay="@style/ImageStyle_Circle"
+                android:layout_marginVertical="15dp"
+                android:layout_centerHorizontal="true"
 
             <!--add user name using database -->
             <TextView
@@ -41,10 +40,69 @@
                 android:textColor="@color/white"
         </RelativeLayout>
 
+        <!-- Adding  info section to show emal, date joinned, -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
 
+
+            <TextView
+                android:id="@+id/userEmail"
+                android:text="Email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="sample@gmail.com"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="10dp">
+
+
+
+            <TextView
+                android:id="@+id/userNameCurrent"
+                android:text="Date Joined"
+                android:layout_below="@+id/userEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MM/DD/YYYY"
+                android:layout_below="@+id/userEmail"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="20dp">
+
+            <TextView
+                android:id="@+id/totalHourStudy"
+                android:text="Total Time Study"
+                android:layout_below="@+id/userNameCurrent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00:00"
+                android:layout_below="@+id/userNameCurrent"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="20dp">
+
+
+        </RelativeLayout>
 
 
     </LinearLayout>
+
+
+
     <!-- TODO: Update blank fragment layout -->
 
 
