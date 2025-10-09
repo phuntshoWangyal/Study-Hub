@@ -9,9 +9,9 @@ import android.widget.Button
 class MainActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login_main)
+        setContentView(R.layout.login_page)
 
-        val signupButton : Button = findViewById(R.id.signupButton)
+        val signupButton : Button = findViewById(R.id.SignUpButton)
 
         signupButton.setOnClickListener {
             val intent = Intent(this, SignupActivity::class.java)
