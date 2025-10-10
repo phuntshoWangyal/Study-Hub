@@ -55,6 +55,7 @@
                 </TextView>
 
                 <EditText
+                    android:id = "@+id/emailLoginField"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:hint="Enter Username">
@@ -62,6 +63,7 @@
                 </EditText>
 
                 <EditText
+                    android:id = "@+id/passwordLoginField"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:layout_marginTop="20dp"

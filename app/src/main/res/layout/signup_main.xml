@@ -55,6 +55,7 @@
 
 <!--            </EditText>-->
             <EditText
+                android:id="@+id/emailField"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:hint="Enter email"
@@ -63,6 +64,7 @@
 
             </EditText>
             <EditText
+                android:id="@+id/passwordField"
                 android:layout_width = "match_parent"
                 android:layout_height = "50dp"
                 android:hint = "Create Password"
@@ -72,6 +74,7 @@
 
             </EditText>
             <EditText
+                android:id="@+id/password2Field"
                 android:layout_height="50dp"
                 android:layout_width="match_parent"
                 android:hint="Confirm Password"
@@ -90,6 +93,34 @@
 
             </Button>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height = "wrap_content"
+                    android:textSize="15sp"
+                    android:textColor="@color/grey"
+                    android:layout_gravity="center"
+                    android:text="Already have an account?"
+                    >
+                </TextView>
+
+                <Button
+                    android:id="@+id/loginButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/white"
+                    android:text="Log in"
+                    android:textColor="@color/bright_blue"
+                    android:textSize="15sp"
+
+                    >
+
+                </Button>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
