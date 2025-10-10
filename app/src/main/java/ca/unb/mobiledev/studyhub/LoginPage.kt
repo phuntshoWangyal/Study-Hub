@@ -33,7 +33,7 @@ class LoginPage : AppCompatActivity() {
                 email,
                 password,
                 onSuccess = {
-                    Log.e("Logging in", "Authentification success")
+                    Log.i("Logging in", "Authentification success")
                     val intent = Intent(this@LoginPage, MainPage::class.java)
                     startActivity(intent)
                 },

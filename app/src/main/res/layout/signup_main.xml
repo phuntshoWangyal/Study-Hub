@@ -23,7 +23,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding = "24dp"
-            >
+            tools:ignore="ExtraText">
             <ImageView
                 android:id="@+id/unblogo"
                 android:layout_width="match_parent"
@@ -44,16 +44,16 @@
 
             </TextView>
 
-<!--            <EditText-->
-<!--                android:id = "@+id/usernameTextField"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="50dp"-->
-<!--                android:hint="Enter Full Name"-->
-<!--                android:layout_margin="10dp"-->
+            <EditText
+                android:id="@+id/usernameTextField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter your username"
 
-<!--                >-->
+                >
 
-<!--            </EditText>-->
+            </EditText>
+
             <EditText
                 android:id="@+id/emailField"
                 android:layout_width="match_parent"

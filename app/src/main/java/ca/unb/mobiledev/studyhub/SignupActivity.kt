@@ -15,7 +15,7 @@ class SignupActivity : AppCompatActivity(){
         val signupButton : Button = findViewById(R.id.SignUpButton)
 
         signupButton.setOnClickListener {
-
+            val username = findViewById<EditText>(R.id.usernameTextField).text.toString()
             val email = findViewById<EditText>(R.id.emailField).text.toString()
             val password = findViewById<EditText>(R.id.passwordField).text.toString()
             val password2 = findViewById<EditText>(R.id.password2Field).text.toString()
@@ -25,7 +25,20 @@ class SignupActivity : AppCompatActivity(){
                     email,
                     password2,
                     onSuccess = {
-                       Log.e("Signing up", "Account was created")
+                       Log.i("Signing up", "Account was created")
+                        FirebaseService.signIn(
+                            email,
+                            password2,
+                            onSuccess = {
+                                FirebaseService.timeStamp()
+                                FirebaseService.usernameChange(username)
+                                FirebaseService.studyTime()
+                            },
+                            onError = { error ->
+                                Log.e("Logging in", "Logging in failed")
+                            }
+                        )
+
                         val intent = Intent(this@SignupActivity, LoginPage::class.java)
                         startActivity(intent)
                     },

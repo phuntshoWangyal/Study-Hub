@@ -94,7 +94,7 @@
                 android:layout_below="@+id/userEmailProfile"
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="20dp"
-                android:text="MM/DD/YYYY" />
+                android:text= "MM/DD/YYYY" />
 
             <TextView
                 android:id="@+id/totalHourStudyLableProfile"
