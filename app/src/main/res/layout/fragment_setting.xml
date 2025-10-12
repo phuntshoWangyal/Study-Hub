@@ -138,7 +138,7 @@
                         android:drawableEnd="@drawable/ic_grey_arrow"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
-                        android:text="Edit User Name"
+                        android:text="Edit User Name"/>
 
                 </com.google.android.material.card.MaterialCardView>
 
@@ -160,7 +160,7 @@
                         android:drawableEnd="@drawable/ic_grey_arrow"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
-                        android:text="Update Password">
+                        android:text="Update Password"/>
 
                 </com.google.android.material.card.MaterialCardView>
                 <!-- cardView for about us section -->
@@ -181,7 +181,7 @@
                         android:drawableEnd="@drawable/ic_grey_arrow"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
-                        android:text="About Us">
+                        android:text="About Us"/>
 
                 </com.google.android.material.card.MaterialCardView>
                 <!-- cardView for sign out -->
@@ -201,7 +201,7 @@
                         android:drawableEnd="@drawable/ic_grey_arrow"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
-                        android:text="Log Out">
+                        android:text="Log Out"/>
 
                 </com.google.android.material.card.MaterialCardView>
 
