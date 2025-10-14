@@ -28,19 +28,20 @@ class LoginPage : AppCompatActivity() {
         loginButton.setOnClickListener {
             val email = findViewById<EditText>(R.id.emailLoginField).text.toString()
             val password = findViewById<EditText>(R.id.passwordLoginField).text.toString()
-
-            FirebaseService.signIn(
-                email,
-                password,
-                onSuccess = {
-                    Log.i("Logging in", "Authentification success")
-                    val intent = Intent(this@LoginPage, MainPage::class.java)
-                    startActivity(intent)
-                },
-                onError = { error ->
-                    Log.e("Logging in", "Authentification fail")
-                }
-            )
+            if(email != "" && password != ""){
+                FirebaseService.signIn(
+                    email,
+                    password,
+                    onSuccess = {
+                        Log.i("Logging in", "Authentification success")
+                        val intent = Intent(this@LoginPage, MainPage::class.java)
+                        startActivity(intent)
+                    },
+                    onError = { error ->
+                        Log.e("Logging in", "Authentification fail")
+                    }
+                )
+            }
 
         }
         val signupButton : Button = findViewById(R.id.SignUpButton)
