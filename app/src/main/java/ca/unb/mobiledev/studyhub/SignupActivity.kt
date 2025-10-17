@@ -33,6 +33,7 @@ class SignupActivity : AppCompatActivity(){
                                 FirebaseService.timeStamp()
                                 FirebaseService.usernameChange(username)
                                 FirebaseService.studyTime()
+                                FirebaseService.verifyEmail()
                             },
                             onError = { error ->
                                 Log.e("Logging in", "Logging in failed")

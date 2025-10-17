@@ -71,4 +71,16 @@ object FirebaseService {
             callback(null)
         }
     }
+
+    fun verifyEmail(){
+        val user = auth.currentUser
+        user?.sendEmailVerification()
+            ?.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.i("EmailVerification", "Verification email sent.")
+                } else {
+                    Log.e("EmailVerification", "Failed to send email.")
+                }
+            }
+    }
 }
