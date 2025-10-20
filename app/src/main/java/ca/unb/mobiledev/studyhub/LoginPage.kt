@@ -2,6 +2,7 @@ package ca.unb.mobiledev.studyhub
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -20,7 +21,12 @@ class LoginPage : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+
+
         }
+
+        val passwordField: EditText = findViewById(R.id.passwordLoginField)
+        passwordField.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
 
         FirebaseApp.initializeApp(this)
 
