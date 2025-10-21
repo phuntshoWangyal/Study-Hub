@@ -1,11 +1,14 @@
 package ca.unb.mobiledev.studyhub
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
+import com.google.android.material.card.MaterialCardView
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -30,15 +33,7 @@ class setting_fragment : Fragment() {
 
 
         //Code to get the date from database, you will need to change it to make it work with fragments, everything else is done including functions
-        /*val textView: TextView = findViewById(R.id.dateJonedProfile)
-
-        FirebaseService.getDate { date ->
-            if (date != null) {
-                textView.text = date
-            } else {
-                textView.text = "N/A"
-            }
-        }
+        /*
         */
 
         arguments?.let {
@@ -46,6 +41,48 @@ class setting_fragment : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val textView: TextView = view.findViewById(R.id.dateJonedProfile)
+        FirebaseService.getDate { date ->
+            if (date != null) {
+                textView.text = date
+            } else {
+                textView.text = "N/A"
+            }
+        }
+
+        val usernameText: TextView = view.findViewById(R.id.userName)
+        val usernameField: TextView = view.findViewById(R.id.userNameProfile)
+        FirebaseService.getName { name ->
+            if (name != null) {
+                usernameText.text = name
+                usernameField.text = name
+            } else {
+                usernameText.text = "N/A"
+                usernameField.text = "N/A"
+            }
+        }
+
+        val emailText: TextView = view.findViewById(R.id.userEmailProfile)
+        FirebaseService.getEmail { email ->
+            if (email != null) {
+                emailText.text = email
+            } else {
+                emailText.text = "N/A"
+            }
+        }
+
+        val cardView = view.findViewById<MaterialCardView>(R.id.signOutCardView)
+        cardView.setOnClickListener {
+            FirebaseService.signOut()
+            val intent = Intent(activity, LoginPage::class.java)
+            startActivity(intent)
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

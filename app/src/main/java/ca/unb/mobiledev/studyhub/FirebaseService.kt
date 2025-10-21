@@ -72,6 +72,30 @@ object FirebaseService {
         }
     }
 
+    fun getName(callback: (String?) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/username")
+
+        ref.get().addOnSuccessListener { snapshot ->
+            val name = snapshot.getValue(String::class.java)
+            callback(name)
+        }.addOnFailureListener {
+            Log.e("Username", "Could not receive date from database")
+            callback(null)
+        }
+    }
+
+    fun getEmail(callback: (String?) -> Unit) {
+        val user = auth.currentUser
+        if (user != null) {
+            val email = user.email
+            callback(email)
+        } else {
+            Log.e("Email", "Could not receive data from database")
+            callback(null)
+        }
+    }
+
     fun verifyEmail(){
         val user = auth.currentUser
         user?.sendEmailVerification()
