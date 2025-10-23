@@ -9,6 +9,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import com.google.android.material.card.MaterialCardView
+import android.app.AlertDialog
+import android.content.Context
+import android.widget.EditText
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -30,11 +33,6 @@ class setting_fragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-        //Code to get the date from database, you will need to change it to make it work with fragments, everything else is done including functions
-        /*
-        */
 
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
@@ -81,6 +79,16 @@ class setting_fragment : Fragment() {
             val intent = Intent(activity, LoginPage::class.java)
             startActivity(intent)
         }
+
+        val emailCardView = view.findViewById<MaterialCardView>(R.id.editUserNameCardView)
+        emailCardView.setOnClickListener {
+            showChangeUsernameDialog(view.context)
+        }
+
+        val passwordCardView = view.findViewById<MaterialCardView>(R.id.editPasswordCardView)
+        passwordCardView.setOnClickListener {
+            showChangePasswordDialog(view.context)
+        }
     }
 
 
@@ -91,6 +99,73 @@ class setting_fragment : Fragment() {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_setting, container, false)
     }
+
+    fun showChangeUsernameDialog(context: Context) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.name_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.nameInput)
+        val confirmButton = dialogView.findViewById<Button>(R.id.confirmButton)
+        val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
+
+        val dialog = AlertDialog.Builder(context)
+            .setView(dialogView)
+            .create()
+
+        confirmButton.setOnClickListener {
+            val newName = nameInput.text.toString()
+            FirebaseService.usernameChange(newName)
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    fun showChangePasswordDialog(context: Context) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.password_dialog, null)
+
+        val passwordInput = dialogView.findViewById<EditText>(R.id.passwordInput)
+        val passwordRepeatInput = dialogView.findViewById<EditText>(R.id.passwordCheckInput)
+        val confirmButton = dialogView.findViewById<Button>(R.id.confirmButton)
+        val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
+        val errorText = dialogView.findViewById<TextView>(R.id.errorText)
+
+        val dialog = AlertDialog.Builder(context)
+            .setView(dialogView)
+            .create()
+
+        confirmButton.setOnClickListener {
+            val newPass = passwordInput.text.toString()
+            val newPass2 = passwordRepeatInput.text.toString()
+            errorText.visibility = View.VISIBLE
+            if(newPass == newPass2 && newPass != "" && newPass.length >= 6){
+                FirebaseService.passwordChange(newPass)
+                dialog.dismiss()
+            }
+            else{
+                if(newPass == ""){
+                    errorText.text = "Entered password was empty"
+                }
+                else if(newPass.length < 6){
+                    errorText.text = "Password should be at least 6 symbols long"
+                }
+                else{
+                    errorText.text = "Passwords do not match"
+                }
+                errorText.visibility = View.VISIBLE
+            }
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 
     companion object {
         /**

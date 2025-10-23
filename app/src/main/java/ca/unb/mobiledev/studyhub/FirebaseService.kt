@@ -58,6 +58,16 @@ object FirebaseService {
 
         ref.updateChildren(userData)
     }
+    fun passwordChange(password: String) {
+        val user = auth.currentUser
+
+        user?.updatePassword(password)?.addOnSuccessListener {
+            Log.i("Password", "Password was changed")
+        }
+            ?.addOnFailureListener {
+            Log.e("Password", "Password was not changed")
+        }
+    }
 
     fun getDate(callback: (String?) -> Unit){
         val uid = auth.currentUser?.uid
