@@ -7,4 +7,8 @@
     <color name="grey">#808080</color>
     <color name="orange">#FFA500</color>
     <color name="bright_blue">#0096FF</color>
+    <color name = "blue_grey">#617a83</color>
+    <color name = "pink">#FFC0CB</color>
+    <color name = "light_green">#88E788</color>
+    <color name ="light_grey">#F7F7F7</color>
 </resources>
