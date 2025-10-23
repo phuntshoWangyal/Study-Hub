@@ -6,10 +6,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class MainPage : AppCompatActivity() {
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: CourseAdapter
-    private lateinit var courseList: MutableList<Course>
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -20,7 +16,12 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.lang.Exception
 
+
 class MainPage : AppCompatActivity() {
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: CourseAdapter
+    private lateinit var courseList: MutableList<Course>
+
 
     lateinit var bottomNav : BottomNavigationView
 
@@ -38,13 +39,6 @@ class MainPage : AppCompatActivity() {
         adapter = CourseAdapter(courseList)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
-    }
-
-    private fun addCourse(course: Course) {
-        courseList.add(course)
-        CourseStorage.saveCourses(this, courseList)
-        adapter.notifyDataSetChanged()
-        // Load default fragment
         loadFragment(home_fragment())
 
         // Bottom Navigation setup
@@ -57,6 +51,7 @@ class MainPage : AppCompatActivity() {
                 }
                 R.id.settingButton -> {
                     loadFragment(setting_fragment())
+                    Log.i("1","button pressed")
                     true
                 }
                 R.id.rankingButton -> {
@@ -68,27 +63,20 @@ class MainPage : AppCompatActivity() {
         }
     }
 
+    private fun addCourse(course: Course) {
+        courseList.add(course)
+        CourseStorage.saveCourses(this, courseList)
+        adapter.notifyDataSetChanged()
+        // Load default fragment
+
+    }
+
     private fun loadFragment(fragment: Fragment) {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.container, fragment)
         transaction.commit()
     }
 
-//        val rankingButton: Button = findViewById(R.id.rankingButton)
-//        rankingButton.setOnClickListener {
-//            val intent = Intent(this@MainPage, RankingPage::class.java)
-//            startActivity(intent)
-//        }
 
-//        val addClassButton: Button = findViewById(R.id.classAddButton)
-//        addClassButton.setOnClickListener {
-//
-//        }
-
-//        val settingsButton: Button = findViewById(R.id.settingsButton)
-//        settingsButton.setOnClickListener {
-//            val intent = Intent(this@MainPage, SettingsPage::class.java)
-//            startActivity(intent)
-//        }
 
 }
