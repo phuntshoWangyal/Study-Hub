@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -46,15 +47,18 @@ class MainPage : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.classAddButton -> {
+                    recyclerView.visibility = View.VISIBLE
                     loadFragment(home_fragment())
                     true
                 }
                 R.id.settingButton -> {
+                    recyclerView.visibility = View.GONE
                     loadFragment(setting_fragment())
                     Log.i("1","button pressed")
                     true
                 }
                 R.id.rankingButton -> {
+                    recyclerView.visibility = View.GONE
                     loadFragment(rank_fragment())
                     true
                 }
