@@ -1,59 +1,76 @@
 package ca.unb.mobiledev.studyhub
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import ca.unb.mobiledev.studyhub.R
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ranking.newInstance] factory method to
- * create an instance of this fragment.
- */
 class rank_fragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var rankBadge: ImageView
+    private lateinit var timeStudyToday: TextView
+    private lateinit var expToday: TextView
+    private lateinit var rankProgress: ProgressBar
+
+    // Example variable: you can later replace this with real data from Firebase or app logic
+    private var totalPoints: Int = 0
+    private var expTodayPoints: Int = 60
+    private var studyHoursToday: Int = 2
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_ranking, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ranking.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            rank_fragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        rankBadge = view.findViewById(R.id.rankBadge)
+        timeStudyToday = view.findViewById(R.id.timeStudyToday)
+        expToday = view.findViewById(R.id.expToday)
+        rankProgress = view.findViewById(R.id.rankProgress)
+
+        updateRankUI()
+    }
+
+    private fun updateRankUI() {
+        // Update text values
+        timeStudyToday.text = "Time Study Today: ${studyHoursToday}h"
+        expToday.text = "Exp Today: $expTodayPoints"
+
+        // Update total points (for now simulate adding exp)
+        totalPoints += expTodayPoints
+        if (totalPoints > 225) totalPoints = 225
+
+        // Update badge drawable based on points
+        rankBadge.setImageResource(R.drawable.ic_rank_badge)
+        rankBadge.setImageLevel(totalPoints)
+
+        // Progress bar: show percentage toward next level
+        val nextLevelMax = when {
+            totalPoints < 30 -> 30
+            totalPoints < 75 -> 75
+            totalPoints < 135 -> 135
+            totalPoints < 225 -> 225
+            else -> 225
+        }
+
+        val prevLevelMin = when {
+            totalPoints < 30 -> 0
+            totalPoints < 75 -> 30
+            totalPoints < 135 -> 75
+            totalPoints < 225 -> 135
+            else -> 225
+        }
+
+        val levelProgress = ((totalPoints - prevLevelMin).toFloat() / (nextLevelMax - prevLevelMin) * 100).toInt()
+        rankProgress.progress = levelProgress
     }
 }
