@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_page"
@@ -12,63 +13,25 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="15dp"
         tools:context=".MainActivity">
 
-        <!-- Header -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/headerTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="1">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Welcome,"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_light"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Phuntsho Wangyal 👋"
-                    android:textSize="20sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold"
-                    android:textStyle="bold"/>
-            </LinearLayout>
-
-            <ImageButton
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@null"
-                android:src="@drawable/outline_account_circle_24"
-                android:contentDescription="Profile"/>
-        </LinearLayout>
-
-        <!-- Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:padding="16dp"
             android:text="My Courses"
-            android:textColor="@color/black"
-            android:fontFamily="@font/poppins_bold"
+            android:textColor="@android:color/holo_red_dark"
             android:textSize="20sp"
-            android:layout_marginTop="20dp"/>
+            android:gravity="center"
+            android:textStyle="bold"
+            android:elevation="4dp" />
 
-        <!-- RecyclerView Section -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="0dp"
             android:nestedScrollingEnabled="false"/>
 
     </LinearLayout>
