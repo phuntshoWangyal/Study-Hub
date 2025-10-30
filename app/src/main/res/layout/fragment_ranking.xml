@@ -51,8 +51,8 @@
 
                     <ImageView
                         android:id="@+id/rankBadge"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
                         android:contentDescription="Rank badge"
                         android:src="@drawable/ic_rank_badge" />
 
@@ -98,7 +98,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/weeklyRecapCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginBottom="12dp"
                 android:elevation="4dp"
                 app:cardCornerRadius="8dp">
@@ -145,7 +145,7 @@
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/weeklyBarChart"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
+                        android:layout_height="400dp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -154,7 +154,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/courseStatCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:elevation="4dp"
                 app:cardCornerRadius="8dp">
 
@@ -191,7 +191,7 @@
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/courseBarChart"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
+                        android:layout_height="400dp"
                         android:layout_marginTop="8dp" />
 
                     <TextView
