@@ -23,7 +23,8 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
     home_fragment.CourseListProvider{
 
     private lateinit var courseList: MutableList<Course>
-
+    //Keep track of current fragment
+    private var currentFragmentTag: String = "home"
 
     lateinit var bottomNav : BottomNavigationView
 
@@ -34,34 +35,43 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
 
         courseList = CourseStorage.loadCourses(this)
 
-
-
-
-        loadFragment(home_fragment())
-
         // Bottom Navigation setup
         bottomNav = findViewById(R.id.bottomNav)
+        loadFragment(home_fragment(),"home")
+
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.classAddButton -> {
-                    val dialog = AddCourseFragment()
-                    dialog.show(supportFragmentManager, AddCourseFragment.TAG)
+                    if (currentFragmentTag == "home") {
+                        val dialog = AddCourseFragment()
+                        dialog.show(supportFragmentManager, AddCourseFragment.TAG)
+                    } else {
+                        loadFragment(home_fragment(), "home")
+                    }
                     true
                 }
                 R.id.settingButton -> {
-                    loadFragment(setting_fragment())
-                    Log.i("1","button pressed")
+                    loadFragment(setting_fragment(), "settings")
                     true
                 }
                 R.id.rankingButton -> {
-                    loadFragment(rank_fragment())
+                    loadFragment(rank_fragment(), "ranking")
                     true
                 }
-
                 else -> false
             }
         }
+
     }
+    private fun updateAddButtonIcon() {
+        val menuItem = bottomNav.menu.findItem(R.id.classAddButton)
+        if (currentFragmentTag == "home") {
+            menuItem.setIcon(R.drawable.ic_add)
+        } else {
+            menuItem.setIcon(R.drawable.ic_home)
+        }
+    }
+
     override fun getCourseList(): MutableList<Course> {
         return courseList
     }
@@ -78,16 +88,15 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
             currentFragment.refreshCourseList()
         } else {
 
-            loadFragment(home_fragment())
+            loadFragment(home_fragment(), "home")
         }
-
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: Fragment, tag: String) {
+        currentFragmentTag = tag
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.container, fragment)
+        transaction.replace(R.id.container, fragment, tag)
         transaction.commit()
+        updateAddButtonIcon()
     }
-
-
 }
