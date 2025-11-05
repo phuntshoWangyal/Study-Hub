@@ -19,9 +19,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.lang.Exception
 
 
-class MainPage : AppCompatActivity() {
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: CourseAdapter
+class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
+    home_fragment.CourseListProvider{
+
     private lateinit var courseList: MutableList<Course>
 
 
@@ -31,16 +31,12 @@ class MainPage : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_page)
 
-        recyclerView = findViewById(R.id.recyclerView)
+
         courseList = CourseStorage.loadCourses(this)
 
-        courseList.add(Course("CS 2063", "Intro to Mobile App Development"))
-        courseList.add(Course("CS 3035", "Building User Interfaces"))
 
 
-        adapter = CourseAdapter(courseList)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
+
         loadFragment(home_fragment())
 
         // Bottom Navigation setup
@@ -48,31 +44,42 @@ class MainPage : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.classAddButton -> {
-                    recyclerView.visibility = View.VISIBLE
-                    loadFragment(home_fragment())
+                    val dialog = AddCourseFragment()
+                    dialog.show(supportFragmentManager, AddCourseFragment.TAG)
                     true
                 }
                 R.id.settingButton -> {
-                    recyclerView.visibility = View.GONE
                     loadFragment(setting_fragment())
                     Log.i("1","button pressed")
                     true
                 }
                 R.id.rankingButton -> {
-                    recyclerView.visibility = View.GONE
                     loadFragment(rank_fragment())
                     true
                 }
+
                 else -> false
             }
         }
     }
-
+    override fun getCourseList(): MutableList<Course> {
+        return courseList
+    }
+    override fun onCourseAdded(course: Course) {
+        addCourse(course)
+        Toast.makeText(this, "Course ${course.courseCode} added!", Toast.LENGTH_LONG).show()
+    }
     private fun addCourse(course: Course) {
         courseList.add(course)
         CourseStorage.saveCourses(this, courseList)
-        adapter.notifyDataSetChanged()
-        // Load default fragment
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.container)
+
+        if (currentFragment is home_fragment) {
+            currentFragment.refreshCourseList()
+        } else {
+
+            loadFragment(home_fragment())
+        }
 
     }
 
@@ -81,7 +88,6 @@ class MainPage : AppCompatActivity() {
         transaction.replace(R.id.container, fragment)
         transaction.commit()
     }
-
 
 
 }
