@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import androidx.appcompat.app.AlertDialog
+import android.widget.EditText
 
 class CourseContentFragment : Fragment() {
 
@@ -23,6 +25,8 @@ class CourseContentFragment : Fragment() {
     private lateinit var leftArrow: ImageView
     private lateinit var rightArrow: ImageView
     private lateinit var playButton: ImageView
+    private lateinit var editCourseButton: ImageView
+
 
     private val db by lazy { FirebaseFirestore.getInstance() }
 
@@ -78,7 +82,79 @@ class CourseContentFragment : Fragment() {
         playButton.setOnClickListener {
             Toast.makeText(requireContext(), "Start study timer", Toast.LENGTH_SHORT).show()
         }
+
+        val editCourseCard = view.findViewById<androidx.cardview.widget.CardView>(R.id.editCourseCard)
+
+        editCourseCard.setOnClickListener {
+            showEditCourseDialog()   // the function you already have for editing/deleting
+        }
     }
+
+    private fun showEditCourseDialog() {
+        val oldCode = courseCode ?: return
+
+        // container layout for two inputs
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(10), dp(20), 0)
+        }
+
+        val codeInput = EditText(requireContext()).apply {
+            hint = "Course code (e.g., CS 2063)"
+            setText(courseCode ?: "")
+        }
+
+        val nameInput = EditText(requireContext()).apply {
+            hint = "Course name"
+            setText(courseName ?: "")
+        }
+
+        container.addView(codeInput)
+        container.addView(nameInput)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit course")
+            .setView(container)
+            .setPositiveButton("Save") { _, _ ->
+                val newCode = codeInput.text.toString().trim()
+                val newName = nameInput.text.toString().trim()
+
+                if (newCode.isEmpty() || newName.isEmpty()) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Course code and name can’t be empty",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@setPositiveButton
+                }
+
+                (activity as? MainPage)?.updateCourse(oldCode, newCode, newName)
+
+                // update local state + UI
+                courseCode = newCode
+                courseName = newName
+                courseCodeView.text = newCode
+                topicNameView.text = newName
+            }
+            .setNeutralButton("Delete course") { _, _ ->
+                showDeleteConfirmDialog(oldCode)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+
+    private fun showDeleteConfirmDialog(code: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete course")
+            .setMessage("Are you sure you want to delete this course?")
+            .setPositiveButton("Delete") { _, _ ->
+                (activity as? MainPage)?.deleteCourse(code)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
 
     private fun fetchNotes(code: String) {
         db.collection("courses").document(code)

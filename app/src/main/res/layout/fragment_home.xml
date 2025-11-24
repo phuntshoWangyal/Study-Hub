@@ -15,7 +15,9 @@
         android:textSize="20dp"
         android:gravity="center"
         android:textStyle="bold"
-        android:elevation="4dp" />
+        android:elevation="4dp"
+        android:background="@color/light_grey"
+    />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

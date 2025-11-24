@@ -106,4 +106,39 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
         transaction.commit()
         updateAddButtonIcon()
     }
+
+    fun updateCourse(oldCode: String, newCode: String, newName: String) {
+        val index = courseList.indexOfFirst { it.courseCode == oldCode }
+        if (index == -1) return
+
+        // Optional: prevent duplicate codes
+        if (oldCode != newCode && courseList.any { it.courseCode == newCode }) {
+            Toast.makeText(this, "Course code already exists", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // update in memory
+        courseList[index].courseCode = newCode
+        courseList[index].courseName = newName
+
+        // persist to file
+        CourseStorage.saveCourses(this, courseList)
+
+        // refresh home fragment
+        val homeFrag = supportFragmentManager.findFragmentByTag("home") as? home_fragment
+        homeFrag?.refreshCourseList()
+    }
+
+    fun deleteCourse(code: String) {
+        val removed = courseList.removeAll { it.courseCode == code }
+        if (removed) {
+            CourseStorage.saveCourses(this, courseList)
+            loadFragment(home_fragment(), "home")
+
+            val homeFrag = supportFragmentManager.findFragmentByTag("home") as? home_fragment
+            homeFrag?.refreshCourseList()
+        }
+    }
+
+
 }
