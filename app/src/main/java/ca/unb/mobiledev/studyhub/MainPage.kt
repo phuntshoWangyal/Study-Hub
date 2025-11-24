@@ -91,6 +91,13 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
             loadFragment(home_fragment(), "home")
         }
     }
+    fun openCourseContent(course: Course) {
+        val fragment = CourseContentFragment.newInstance(
+            course.courseCode,
+            course.courseName
+        )
+        loadFragment(fragment, "courseContent")
+    }
 
     private fun loadFragment(fragment: Fragment, tag: String) {
         currentFragmentTag = tag

@@ -1,5 +1,6 @@
 package ca.unb.mobiledev.studyhub
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -46,7 +47,7 @@ class home_fragment : Fragment() {
 
         // Setup RecyclerView and Adapter
         adapter = CourseAdapter(courseList) { selectedCourse ->
-            Toast.makeText(context, "Clicked ${selectedCourse.courseCode}", Toast.LENGTH_SHORT).show()
+            (activity as? MainPage)?.openCourseContent(selectedCourse)
         }
 
         recyclerView.layoutManager = LinearLayoutManager(context)
