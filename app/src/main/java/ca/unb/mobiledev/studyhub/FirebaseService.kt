@@ -4,7 +4,10 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 
@@ -116,6 +119,100 @@ object FirebaseService {
                     Log.e("EmailVerification", "Failed to send email.")
                 }
             }
+    }
+
+    fun createCourse(name: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses")
+        val userData = mapOf(name to name)
+        val reference = realtimeDb.getReference("users/$uid/Courses/$name")
+        val hours = 0.0
+        val data = mapOf("StudiedTime" to hours)
+        ref.updateChildren(userData)
+        reference.updateChildren(data)
+    }
+
+    fun updateCourse(name: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses")
+        val userData = mapOf(name to name)
+        ref.updateChildren(userData)
+    }
+
+    fun getCourseTime(name: String?, callback: (Double) -> Unit){
+        if(name == null){
+            callback(0.0)
+            return
+        }
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/StudiedTime")
+
+        ref.get().addOnSuccessListener { snapshot ->
+            val time = snapshot.getValue(Double::class.java)
+            callback(time!!)
+        }.addOnFailureListener {
+            Log.e("Getting time", "Could not receive time from database")
+            callback(0.0)
+        }
+    }
+
+    fun updateTime(name: String, timeAdd: Double){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/StudiedTime")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            val reference = realtimeDb.getReference("users/$uid/Courses/$name")
+            val userData = mapOf("StudiedTime" to time)
+            reference.updateChildren(userData)
+        }.addOnFailureListener { e ->
+            Log.e("Time of Course", e.toString())
+        }
+    }
+
+    fun updateDayStudyTime(name: String, timeAdd: Double){
+        val year = getCurrentYear()
+        val week = getCurrentWeek()
+        val day = getCurrentDayOfWeek()
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/$year/$week/$day")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            val reference = realtimeDb.getReference("users/$uid/Courses/$name/$year/$week/")
+            val userData = mapOf(day to time)
+            reference.updateChildren(userData)
+        }.addOnFailureListener { e ->
+            Log.e("Updating day time", e.toString())
+        }
+    }
+
+    fun deleteCourse(name: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name")
+        ref.removeValue()
+            .addOnSuccessListener {
+                Log.i("Course Deleting", "Course was deleted from database")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Course deleting", e.toString())
+            }
+    }
+
+    fun getCurrentDayOfWeek(): String {
+        val sdf = SimpleDateFormat("EEEE", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
+    fun getCurrentWeek(): String {
+        val sdf = SimpleDateFormat("w", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
+    fun getCurrentYear(): String {
+        val sdf = SimpleDateFormat("yyyy", Locale.getDefault())
+        val year = sdf.format(Date())
+        return year
     }
 
 
