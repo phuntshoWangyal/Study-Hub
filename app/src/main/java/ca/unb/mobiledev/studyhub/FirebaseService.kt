@@ -139,6 +139,24 @@ object FirebaseService {
         ref.updateChildren(userData)
     }
 
+    fun getWeeklyTime(name: String, year: String, week: String, callback: (List<Double>) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/$year/$week")
+        ref.get().addOnSuccessListener { snapshot ->
+            val list = mutableListOf<Double>()
+            for (snapshot in snapshot.children) {
+                val value = snapshot.getValue(Double::class.java)?: 0.0
+                list.add(value)
+            }
+            Log.i("list", list.toString())
+            callback(list)
+        }.addOnFailureListener {
+            Log.e("Getting time", "Could not receive time from database")
+            callback(emptyList())
+        }
+
+    }
+
     fun getCourseTime(name: String?, callback: (Double) -> Unit){
         if(name == null){
             callback(0.0)
