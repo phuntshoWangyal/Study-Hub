@@ -8,34 +8,29 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
 object CourseStorage {
-    private val FILE_NAME = "courses.txt"
+    private fun fileNameForUser(uid: String) = "courses_$uid.txt"
 
-    fun saveCourses(context: Context, courses: List<Course>) {
+    fun saveCourses(context: Context, uid: String, courses: List<Course>) {
         try {
-            val file = File(context.filesDir, FILE_NAME)
-            ObjectOutputStream(FileOutputStream(file)).use { oos ->
-                oos.writeObject(courses)
-            }
+            val file = File(context.filesDir, fileNameForUser(uid))
+            ObjectOutputStream(FileOutputStream(file)).use { it.writeObject(courses) }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
-    fun clearCourses(context: Context) {
-        saveCourses(context, mutableListOf())
-    }
 
-    fun loadCourses(context: Context): MutableList<Course> {
-        val file = File(context.filesDir, FILE_NAME)
+    fun loadCourses(context: Context, uid: String): MutableList<Course> {
+        val file = File(context.filesDir, fileNameForUser(uid))
         if (!file.exists()) return mutableListOf()
-
         return try {
-            ObjectInputStream(FileInputStream(file)).use { ois ->
-                @Suppress("UNCHECKED_CAST")
-                ois.readObject() as MutableList<Course>
-            }
+            ObjectInputStream(FileInputStream(file)).use { @Suppress("UNCHECKED_CAST") it.readObject() as MutableList<Course> }
         } catch (e: Exception) {
             e.printStackTrace()
             mutableListOf()
         }
+    }
+
+    fun clearCourses(context: Context, uid: String) {
+        saveCourses(context, uid, mutableListOf())
     }
 }

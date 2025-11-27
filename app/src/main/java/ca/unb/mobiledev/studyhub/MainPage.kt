@@ -32,8 +32,10 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_page)
 
+        val uid = FirebaseService.auth.currentUser?.uid ?: return
 
-        courseList = CourseStorage.loadCourses(this)
+        // Load cached courses
+        courseList = CourseStorage.loadCourses(this, uid)
 
         // Bottom Navigation setup
         bottomNav = findViewById(R.id.bottomNav)
@@ -62,7 +64,20 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
             }
         }
 
+        // --- Fetch latest courses from Firebase ---
+        FirebaseService.getCourses({ courses ->
+            courseList.clear()
+            courseList.addAll(courses)
+            CourseStorage.saveCourses(this, uid, courses)
+
+            // Refresh home fragment if loaded
+            val homeFrag = supportFragmentManager.findFragmentByTag("home") as? home_fragment
+            homeFrag?.refreshCourseList()
+        }, { error ->
+            Log.e("MainPage", "Failed to fetch courses: ${error.message}")
+        })
     }
+
     private fun updateAddButtonIcon() {
         val menuItem = bottomNav.menu.findItem(R.id.classAddButton)
         if (currentFragmentTag == "home") {
@@ -81,7 +96,9 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
     }
     private fun addCourse(course: Course) {
         courseList.add(course)
-        CourseStorage.saveCourses(this, courseList)
+        val uid = FirebaseService.auth.currentUser?.uid ?: return
+        CourseStorage.saveCourses(this, uid, courseList)
+
         val currentFragment = supportFragmentManager.findFragmentById(R.id.container)
 
         if (currentFragment is home_fragment) {
@@ -111,20 +128,17 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
         val index = courseList.indexOfFirst { it.courseCode == oldCode }
         if (index == -1) return
 
-        // Optional: prevent duplicate codes
+        val uid = FirebaseService.auth.currentUser?.uid ?: return
+
         if (oldCode != newCode && courseList.any { it.courseCode == newCode }) {
             Toast.makeText(this, "Course code already exists", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // update in memory
         courseList[index].courseCode = newCode
         courseList[index].courseName = newName
+        CourseStorage.saveCourses(this, uid, courseList)
 
-        // persist to file
-        CourseStorage.saveCourses(this, courseList)
-
-        // refresh home fragment
         val homeFrag = supportFragmentManager.findFragmentByTag("home") as? home_fragment
         homeFrag?.refreshCourseList()
     }
@@ -132,13 +146,15 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
     fun deleteCourse(code: String) {
         val removed = courseList.removeAll { it.courseCode == code }
         if (removed) {
-            CourseStorage.saveCourses(this, courseList)
+            val uid = FirebaseService.auth.currentUser?.uid ?: return
+            CourseStorage.saveCourses(this, uid, courseList)
             loadFragment(home_fragment(), "home")
 
             val homeFrag = supportFragmentManager.findFragmentByTag("home") as? home_fragment
             homeFrag?.refreshCourseList()
         }
     }
+
 
 
 }

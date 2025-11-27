@@ -6,13 +6,14 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class CourseAdapter(private val courseList: List<Course>, private val onItemClick: (Course) -> Unit   ) :
-    RecyclerView.Adapter<CourseAdapter.CourseViewHolder>() {
+class CourseAdapter(
+    private var courseList: List<Course>,
+    private val onItemClick: (Course) -> Unit
+) : RecyclerView.Adapter<CourseAdapter.CourseViewHolder>() {
 
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val courseCode: TextView = itemView.findViewById(R.id.courseCode)
         val courseName: TextView = itemView.findViewById(R.id.courseName)
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseViewHolder {
@@ -31,6 +32,10 @@ class CourseAdapter(private val courseList: List<Course>, private val onItemClic
         }
     }
 
-
     override fun getItemCount(): Int = courseList.size
+
+    fun updateCourses(newCourses: List<Course>) {
+        courseList = newCourses
+        notifyDataSetChanged()
+    }
 }

@@ -117,6 +117,38 @@ object FirebaseService {
                 }
             }
     }
+    private val coursesRef
+        get() = firestore.collection("users")
+            .document(auth.currentUser?.uid ?: "")
+            .collection("Courses")
 
+    fun addCourse(course: Course, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        coursesRef.add(course)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it) }
+    }
 
+    fun getCourses(onResult: (List<Course>) -> Unit, onError: (Exception) -> Unit) {
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val courses = snapshot.documents.mapNotNull { it.toObject(Course::class.java) }
+                onResult(courses)
+            }
+            .addOnFailureListener { onError(it) }
+    }
+
+    fun clearCourses(onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val batch = firestore.batch()
+                snapshot.documents.forEach { batch.delete(it.reference) }
+                batch.commit()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onError(it) }
+            }
+            .addOnFailureListener { onError(it) }
+    }
 }
+
+
+

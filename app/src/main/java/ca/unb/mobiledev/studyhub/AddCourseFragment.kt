@@ -4,9 +4,11 @@ package ca.unb.mobiledev.studyhub
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import java.lang.ClassCastException
 
@@ -50,13 +52,33 @@ class AddCourseFragment : DialogFragment() {
 
                 if (courseCode.isNotEmpty() && courseName.isNotEmpty()) {
                     val newCourse = Course(courseCode, courseName)
-                    // Send the course back to the activity
-                    listener.onCourseAdded(newCourse)
-                    dialog?.dismiss()
+                    val uid = FirebaseService.auth.currentUser?.uid
+                    if (uid != null) {
+                        // 1️⃣ Save locally first
+                        val existing = CourseStorage.loadCourses(requireContext(), uid)
+                        CourseStorage.saveCourses(requireContext(), uid, existing.toMutableList().apply { add(newCourse) })
+
+                        // 2️⃣ Update UI
+                        listener.onCourseAdded(newCourse)
+                        dialog?.dismiss()
+
+                        // 3️⃣ Try Firebase in background
+                        FirebaseService.addCourse(newCourse, {
+                            Log.i("AddCourseFragment", "Course synced to Firebase")
+                        }, { error ->
+                            Log.e("AddCourseFragment", "Failed to sync to Firebase: ${error.message}")
+                        })
+
+                    } else {
+                        Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    // Optionally show a Toast or error message if fields are empty
+                    Toast.makeText(requireContext(), "Course code and name cannot be empty", Toast.LENGTH_SHORT).show()
                 }
             }
+
+
+
 
             cancelButton.setOnClickListener {
                 dialog?.cancel()
