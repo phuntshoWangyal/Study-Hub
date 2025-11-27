@@ -188,7 +188,6 @@ object FirebaseService {
     }
 
 
-
     fun deleteTopic(courseName: String, topicName: String){
         val uid = auth.currentUser?.uid ?: return
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Topics/$topicName")
@@ -293,7 +292,7 @@ object FirebaseService {
         }
     }
 
-    fun updateTime(name: String, timeAdd: Double){
+    fun updateTime(name: String, timeAdd: Double, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$name/StudiedTime")
         ref.get().addOnSuccessListener { snapshot ->
@@ -301,6 +300,7 @@ object FirebaseService {
             time += timeAdd
             val reference = realtimeDb.getReference("users/$uid/Courses/$name")
             val userData = mapOf("StudiedTime" to time)
+            val ref2 = realtimeDb.getReference("users/$uid/Courses/$name/$topic/time")
             reference.updateChildren(userData)
         }.addOnFailureListener { e ->
             Log.e("Time of Course", e.toString())

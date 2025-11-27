@@ -109,7 +109,7 @@ class CourseContentFragment : Fragment() {
 
     override fun onPause(){
         super.onPause()
-        FirebaseService.updateTime(courseCode!!, courseTime/3600000)
+        FirebaseService.updateTime(courseCode!!, courseTime/3600000, "Fundamentals", 0)
         FirebaseService.updateDayStudyTime(courseCode!!, courseTime/3600000)
     }
 

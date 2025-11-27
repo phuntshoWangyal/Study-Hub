@@ -15,7 +15,6 @@ import com.google.firebase.FirebaseApp
 
 
 private lateinit var courseList: List<Course>
-private lateinit var listener: AddCourseDialogListener
 class LoginPage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,25 +50,26 @@ class LoginPage : AppCompatActivity() {
                             courseList = CourseStorage.loadCourses(this)
                             val courseCodes = courseList.map { it.courseCode }
                             var newCourse: Course
+                            val courseList: MutableList<Course> = mutableListOf()
+                            var pending = list.count { it !in courseCodes }
                             var name: String
                             for (code in list) {
                                 if(code !in courseCodes){
-
                                     FirebaseService.getCourseName(code){ name ->
+                                        Log.i("Checking name", name)
                                         newCourse = Course(code, name)
-                                        listener.onCourseAdded(newCourse)
-                                    }
+                                        courseList.add(newCourse)
+                                        Log.i("New list", courseList.toString())
 
+                                        pending--
+                                        if (pending == 0) {
+                                            CourseStorage.saveCourses(this, courseList)
+                                            startActivity(intent)
+                                        }
+                                    }
                                 }
                             }
-
-
-
-
-
                         }
-
-                        startActivity(intent)
                     },
                     onError = { error ->
                         Log.e("Logging in", "Authentification fail")
