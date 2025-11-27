@@ -1,35 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:fillViewport="true"
     tools:context=".home_fragment">
-    <TextView
-        android:id="@+id/headerTitle"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="My Courses"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="20dp"
-        android:gravity="center"
-        android:textStyle="bold"
-        android:elevation="4dp" />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center_horizontal"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:textColor="@android:color/holo_red_dark" />
+        android:orientation="vertical">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false" />
+        <!-- Existing header -->
+        <TextView
+            android:id="@+id/headerTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="My Courses"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:elevation="4dp"
+            android:background="@color/light_grey" />
 
-</LinearLayout>
+        <!-- Courses list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:clipToPadding="false" />
+
+        <!-- NEW: Study Techniques header -->
+        <TextView
+            android:id="@+id/studyTechniquesTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Study Techniques"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_red_dark"
+            android:gravity="center_horizontal"
+            android:paddingTop="24dp"
+            android:paddingBottom="12dp" />
+
+        <!-- NEW: Study Techniques list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/techniqueRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:clipToPadding="false" />
+
+    </LinearLayout>
+
+</ScrollView>
