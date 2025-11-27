@@ -12,6 +12,7 @@ import com.google.android.material.card.MaterialCardView
 import android.app.AlertDialog
 import android.content.Context
 import android.widget.EditText
+import com.google.firebase.Firebase
 
 
 // TODO: Rename parameter arguments, choose names that match

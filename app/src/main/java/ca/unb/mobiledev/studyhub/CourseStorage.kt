@@ -20,6 +20,9 @@ object CourseStorage {
             e.printStackTrace()
         }
     }
+    fun clearCourses(context: Context) {
+        saveCourses(context, mutableListOf())
+    }
 
     fun loadCourses(context: Context): MutableList<Course> {
         val file = File(context.filesDir, FILE_NAME)
