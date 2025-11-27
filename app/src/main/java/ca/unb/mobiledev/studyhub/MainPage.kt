@@ -57,7 +57,7 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
                 R.id.rankingButton -> {
                     loadFragment(rank_fragment(), "ranking")
                     FirebaseService.getWeeklyTime("CS1111", "2025", "48") { time ->
-                            Log.i("1", "received")
+                        //make a function of creating a graph from this list in ranking page using this function
                     }
 
                     true

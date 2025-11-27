@@ -142,11 +142,28 @@ object FirebaseService {
     fun getWeeklyTime(name: String, year: String, week: String, callback: (List<Double>) -> Unit){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$name/$year/$week")
+
+
         ref.get().addOnSuccessListener { snapshot ->
-            val list = mutableListOf<Double>()
+            val list = mutableListOf(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+            val dayIndex = mapOf(
+                "Sunday" to 0,
+                "Monday" to 1,
+                "Tuesday" to 2,
+                "Wednesday" to 3,
+                "Thursday" to 4,
+                "Friday" to 5,
+                "Saturday" to 6
+            )
+
             for (snapshot in snapshot.children) {
+                val dayName = snapshot.key
                 val value = snapshot.getValue(Double::class.java)?: 0.0
-                list.add(value)
+                val index = dayIndex[dayName]
+                if (index != null) {
+                    list[index] = value
+                }
             }
             Log.i("list", list.toString())
             callback(list)
