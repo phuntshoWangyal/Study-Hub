@@ -53,18 +53,25 @@ class LoginPage : AppCompatActivity() {
                             val courseList: MutableList<Course> = mutableListOf()
                             var pending = list.count { it !in courseCodes }
                             var name: String
-                            for (code in list) {
-                                if(code !in courseCodes){
-                                    FirebaseService.getCourseName(code){ name ->
-                                        Log.i("Checking name", name)
-                                        newCourse = Course(code, name)
-                                        courseList.add(newCourse)
-                                        Log.i("New list", courseList.toString())
+                            if(list.isEmpty()){
+                                startActivity(intent)
+                            }else if (pending == 0) {
+                                startActivity(intent)
+                            }
+                                else{
+                                for (code in list) {
+                                    if(code !in courseCodes){
+                                        FirebaseService.getCourseName(code){ name ->
+                                            Log.i("Checking name", name)
+                                            newCourse = Course(code, name)
+                                            courseList.add(newCourse)
+                                            Log.i("New list", courseList.toString())
 
-                                        pending--
-                                        if (pending == 0) {
-                                            CourseStorage.saveCourses(this, courseList)
-                                            startActivity(intent)
+                                            pending--
+                                            if (pending == 0) {
+                                                CourseStorage.saveCourses(this, courseList)
+                                                startActivity(intent)
+                                            }
                                         }
                                     }
                                 }

@@ -142,9 +142,43 @@ object FirebaseService {
             val name = snapshot.getValue(String::class.java)
             callback(name!!)
         }.addOnFailureListener {
-            Log.e("Getting time", "Could not receive time from database")
+            Log.e("Getting course code", "Could not receive time from database")
             callback("Something went wrong")
         }
+    }
+
+    fun getTopics(courseCode: String, callback: (List<String>) -> Unit) {
+        val uid = auth.currentUser?.uid
+        val coursesRef = FirebaseDatabase.getInstance()
+            .getReference("users/$uid/Courses/$courseCode/Topics")
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val courseNames = mutableListOf<String>()
+                for (snapshot in snapshot.children) {
+                    courseNames.add(snapshot.key!!)
+                }
+                callback(courseNames)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Topics Fetch", "Failed to fetch courses")
+            }
+    }
+
+    fun getTests(courseCode: String, callback: (List<String>) -> Unit) {
+        val uid = auth.currentUser?.uid
+        val coursesRef = FirebaseDatabase.getInstance()
+            .getReference("users/$uid/Courses/$courseCode/Tests")
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val courseNames = mutableListOf<String>()
+                for (snapshot in snapshot.children) {
+                    courseNames.add(snapshot.key!!)
+                }
+                callback(courseNames)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Tests Fetch", "Failed to fetch courses")
+            }
     }
 
     fun createTest(courseName: String, testName: String){
@@ -228,8 +262,6 @@ object FirebaseService {
             .addOnSuccessListener { snapshot ->
                 val courseNames = mutableListOf<String>()
                 for (snapshot in snapshot.children) {
-                    //val name = snapshot.child("CourseName").getValue(String::class.java)
-                    //name?.let { courseNames.add(it) }
                     courseNames.add(snapshot.key!!)
                 }
                 callback(courseNames)
