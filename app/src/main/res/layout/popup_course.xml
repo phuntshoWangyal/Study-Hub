@@ -46,7 +46,8 @@
             android:id="@+id/btn_add_course"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add"/>
+            android:text="Add"
+            android:backgroundTint="@color/red"/>
 
     </LinearLayout>
 </LinearLayout>
