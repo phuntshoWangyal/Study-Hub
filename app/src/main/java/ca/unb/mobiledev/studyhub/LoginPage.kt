@@ -10,8 +10,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import ca.unb.mobiledev.studyhub.AddCourseFragment.AddCourseDialogListener
 import com.google.firebase.FirebaseApp
 
+
+private lateinit var courseList: List<Course>
+private lateinit var listener: AddCourseDialogListener
 class LoginPage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +46,28 @@ class LoginPage : AppCompatActivity() {
                         Log.i("Logging in", "Authentification success")
                         val intent = Intent(this@LoginPage, MainPage::class.java)
                         val list: List<String>
-                        FirebaseService.getCourseList { list -> Log.i("list", list.toString()) }
+                        FirebaseService.getCourseList { list ->
+                            Log.i("list", list.toString())
+                            courseList = CourseStorage.loadCourses(this)
+                            val courseCodes = courseList.map { it.courseCode }
+                            var newCourse: Course
+                            var name: String
+                            for (code in list) {
+                                if(code !in courseCodes){
+
+                                    FirebaseService.getCourseName(code){ name ->
+                                        newCourse = Course(code, name)
+                                        listener.onCourseAdded(newCourse)
+                                    }
+
+                                }
+                            }
+
+
+
+
+
+                        }
 
                         startActivity(intent)
                     },

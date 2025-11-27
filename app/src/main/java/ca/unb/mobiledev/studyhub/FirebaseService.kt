@@ -134,6 +134,19 @@ object FirebaseService {
         reference2.updateChildren(data2)
     }
 
+    fun getCourseName(code: String, callback: (String) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$code/CourseName")
+
+        ref.get().addOnSuccessListener { snapshot ->
+            val name = snapshot.getValue(String::class.java)
+            callback(name!!)
+        }.addOnFailureListener {
+            Log.e("Getting time", "Could not receive time from database")
+            callback("Something went wrong")
+        }
+    }
+
     fun createTest(courseName: String, testName: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
