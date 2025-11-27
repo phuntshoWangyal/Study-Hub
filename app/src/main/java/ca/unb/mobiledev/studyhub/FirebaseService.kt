@@ -47,8 +47,7 @@ object FirebaseService {
     fun studyTime(){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid")
-
-        val studyTime = "00:00:00"
+        val studyTime = 0.0
         val userData = mapOf("studyTime" to studyTime)
         ref.updateChildren(userData)
     }
@@ -142,9 +141,43 @@ object FirebaseService {
             val name = snapshot.getValue(String::class.java)
             callback(name!!)
         }.addOnFailureListener {
-            Log.e("Getting time", "Could not receive time from database")
+            Log.e("Getting course code", "Could not receive time from database")
             callback("Something went wrong")
         }
+    }
+
+    fun getTopics(courseCode: String, callback: (List<String>) -> Unit) {
+        val uid = auth.currentUser?.uid
+        val coursesRef = FirebaseDatabase.getInstance()
+            .getReference("users/$uid/Courses/$courseCode/Topics")
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val courseNames = mutableListOf<String>()
+                for (snapshot in snapshot.children) {
+                    courseNames.add(snapshot.key!!)
+                }
+                callback(courseNames)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Topics Fetch", "Failed to fetch courses")
+            }
+    }
+
+    fun getTests(courseCode: String, callback: (List<String>) -> Unit) {
+        val uid = auth.currentUser?.uid
+        val coursesRef = FirebaseDatabase.getInstance()
+            .getReference("users/$uid/Courses/$courseCode/Tests")
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val courseNames = mutableListOf<String>()
+                for (snapshot in snapshot.children) {
+                    courseNames.add(snapshot.key!!)
+                }
+                callback(courseNames)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Tests Fetch", "Failed to fetch courses")
+            }
     }
 
     fun createTest(courseName: String, testName: String){
@@ -228,8 +261,6 @@ object FirebaseService {
             .addOnSuccessListener { snapshot ->
                 val courseNames = mutableListOf<String>()
                 for (snapshot in snapshot.children) {
-                    //val name = snapshot.child("CourseName").getValue(String::class.java)
-                    //name?.let { courseNames.add(it) }
                     courseNames.add(snapshot.key!!)
                 }
                 callback(courseNames)
@@ -300,10 +331,33 @@ object FirebaseService {
             time += timeAdd
             val reference = realtimeDb.getReference("users/$uid/Courses/$name")
             val userData = mapOf("StudiedTime" to time)
-            val ref2 = realtimeDb.getReference("users/$uid/Courses/$name/$topic/time")
             reference.updateChildren(userData)
+            updateUserTime(timeAdd)
+            updateTopicTime(name, timeAdd, topic, technique)
         }.addOnFailureListener { e ->
             Log.e("Time of Course", e.toString())
+        }
+    }
+
+    fun updateUserTime(timeAdd: Double){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/studyTime")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            val ref2 = realtimeDb.getReference("users/$uid")
+            val userData = mapOf("studyTime" to time)
+            ref2.updateChildren(userData)
+        }
+    }
+    fun updateTopicTime(name: String, timeAdd: Double, topic: String, technique: Int){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            val userData = mapOf("TotalTime" to time)
+            ref.updateChildren(userData)
         }
     }
 
