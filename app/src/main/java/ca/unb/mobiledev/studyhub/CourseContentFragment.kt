@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
 
 
+
 class CourseContentFragment : Fragment() {
 
     private lateinit var courseCodeView: TextView
@@ -29,7 +30,9 @@ class CourseContentFragment : Fragment() {
     private lateinit var editCourseButton: ImageView
 
 
-    private val db by lazy { FirebaseFirestore.getInstance() }
+    private lateinit var topicMoreButton: ImageView
+
+
 
     private var courseCode: String? = null
     private var courseName: String? = null
@@ -69,10 +72,7 @@ class CourseContentFragment : Fragment() {
         topicNameView.text = courseName ?: "Topic name"
         studyTimeView.text = "Study Time:"
 
-        if (!courseCode.isNullOrEmpty()) {
-            fetchNotes(courseCode!!)
-            fetchTestSummary(courseCode!!)
-        }
+
 
         leftArrow.setOnClickListener {
             Toast.makeText(requireContext(), "Left arrow clicked", Toast.LENGTH_SHORT).show()
@@ -89,6 +89,8 @@ class CourseContentFragment : Fragment() {
         editCourseCard.setOnClickListener {
             showEditCourseDialog()   // the function you already have for editing/deleting
         }
+
+
     }
 
     private fun showEditCourseDialog() {
@@ -157,63 +159,6 @@ class CourseContentFragment : Fragment() {
     }
 
 
-    private fun fetchNotes(code: String) {
-        db.collection("courses").document(code)
-            .collection("notes")
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(12)
-            .get()
-            .addOnSuccessListener { snap ->
-                pdfRow.removeAllViews()
-                if (snap.isEmpty) {
-                    val tv = TextView(requireContext()).apply { text = "No notes yet" }
-                    pdfRow.addView(tv)
-                    return@addOnSuccessListener
-                }
-
-                for (doc in snap.documents) {
-                    val title = doc.getString("title") ?: "PDF"
-                    val icon = ImageView(requireContext()).apply {
-                        layoutParams = LinearLayout.LayoutParams(dp(30), dp(30)).also {
-                            (it as ViewGroup.MarginLayoutParams).marginEnd = dp(12)
-                        }
-                        setImageResource(R.drawable.pdf_icon)
-                        contentDescription = title
-                        setOnClickListener {
-                            Toast.makeText(requireContext(), "Open $title", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    pdfRow.addView(icon)
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed to load notes", Toast.LENGTH_SHORT).show()
-            }
-    }
-
-    private fun fetchTestSummary(code: String) {
-        db.collection("courses").document(code)
-            .collection("tests")
-            .limit(1)
-            .get()
-            .addOnSuccessListener { snap ->
-                if (snap.isEmpty) {
-                    testTitleView.text = "No tests yet"
-                    testTopicsView.text = ""
-                    return@addOnSuccessListener
-                }
-
-                val doc = snap.documents.first()
-                val name = doc.getString("name") ?: "Test"
-                val topics = (doc.get("topics") as? List<*>)?.joinToString(", ") ?: "—"
-
-                testTitleView.text = name
-                testTopicsView.text = "Includes $topics"
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed to load tests", Toast.LENGTH_SHORT).show()
-            }
-    }
 
     private fun dp(v: Int): Int = (resources.displayMetrics.density * v).toInt()
 
