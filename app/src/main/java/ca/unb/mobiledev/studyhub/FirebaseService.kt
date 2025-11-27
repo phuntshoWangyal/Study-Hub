@@ -121,15 +121,83 @@ object FirebaseService {
             }
     }
 
-    fun createCourse(name: String){
+    fun createCourse(code: String, name: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses")
-        val userData = mapOf(name to name)
-        val reference = realtimeDb.getReference("users/$uid/Courses/$name")
-        val hours = 0.0
-        val data = mapOf("StudiedTime" to hours)
+        val userData = mapOf(code to code)
+        val reference = realtimeDb.getReference("users/$uid/Courses/$code")
+        val data = mapOf("StudiedTime" to 0.0)
         ref.updateChildren(userData)
         reference.updateChildren(data)
+        val reference2 = realtimeDb.getReference("users/$uid/Courses/$code")
+        val data2 = mapOf("CourseName" to name)
+        reference2.updateChildren(data2)
+    }
+
+    fun createTest(courseName: String, testName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
+        val userData = mapOf("Grade" to null)
+        ref.updateChildren(userData)
+    }
+
+    fun createTopic(courseName: String, topicName: String) {
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Topics/$topicName")
+        val userData = mapOf("timeOfStudy" to 0.0)
+        ref.updateChildren(userData)
+    }
+
+    fun addTopic(courseName: String, testName: String, topicName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName/Topics")
+        val userData = mapOf(topicName to topicName)
+        ref.updateChildren(userData)
+    }
+
+    fun setGrade(courseName:String, testName: String, grade: Double){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
+        val userData = mapOf("Grade" to grade)
+        ref.updateChildren(userData)
+    }
+
+    fun deleteTest(courseName: String, testName: String){
+        val uid = auth.currentUser?.uid ?: return
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
+        ref.removeValue()
+            .addOnSuccessListener {
+                Log.i("Test Deleting", "Course was deleted from database")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Test deleting", e.toString())
+            }
+    }
+
+
+
+    fun deleteTopic(courseName: String, topicName: String){
+        val uid = auth.currentUser?.uid ?: return
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Topics/$topicName")
+        ref.removeValue()
+            .addOnSuccessListener {
+                Log.i("Test Deleting", "Course was deleted from database")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Test deleting", e.toString())
+            }
+    }
+
+    fun deleteTopicFromTest(courseName: String, topicName: String, testName: String){
+        val uid = auth.currentUser?.uid ?: return
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName/Topics/$topicName")
+        ref.removeValue()
+            .addOnSuccessListener {
+                Log.i("Test Deleting", "Course was deleted from database")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Test deleting", e.toString())
+            }
     }
 
     fun updateCourse(name: String){
@@ -138,6 +206,27 @@ object FirebaseService {
         val userData = mapOf(name to name)
         ref.updateChildren(userData)
     }
+
+    fun getCourseList(callback: (List<String>) -> Unit){
+        val uid = auth.currentUser?.uid
+        val coursesRef = FirebaseDatabase.getInstance()
+            .getReference("users/$uid/Courses")
+
+        coursesRef.get()
+            .addOnSuccessListener { snapshot ->
+                val courseNames = mutableListOf<String>()
+                for (snapshot in snapshot.children) {
+                    //val name = snapshot.child("CourseName").getValue(String::class.java)
+                    //name?.let { courseNames.add(it) }
+                    courseNames.add(snapshot.key!!)
+                }
+                callback(courseNames)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Course Fetch", "Failed to fetch courses")
+            }
+    }
+
 
     fun getWeeklyTime(name: String, year: String, week: String, callback: (List<Double>) -> Unit){
         val uid = auth.currentUser?.uid
@@ -249,6 +338,4 @@ object FirebaseService {
         val year = sdf.format(Date())
         return year
     }
-
-
 }

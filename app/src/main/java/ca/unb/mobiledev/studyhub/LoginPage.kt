@@ -41,6 +41,9 @@ class LoginPage : AppCompatActivity() {
                     onSuccess = {
                         Log.i("Logging in", "Authentification success")
                         val intent = Intent(this@LoginPage, MainPage::class.java)
+                        val list: List<String>
+                        FirebaseService.getCourseList { list -> Log.i("list", list.toString()) }
+
                         startActivity(intent)
                     },
                     onError = { error ->

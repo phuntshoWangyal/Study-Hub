@@ -50,7 +50,7 @@ class AddCourseFragment : DialogFragment() {
 
                 if (courseCode.isNotEmpty() && courseName.isNotEmpty()) {
                     val newCourse = Course(courseCode, courseName)
-                    FirebaseService.createCourse(courseCode)
+                    FirebaseService.createCourse(courseCode, courseName)
                     // Send the course back to the activity
                     listener.onCourseAdded(newCourse)
                     dialog?.dismiss()
