@@ -109,6 +109,7 @@ class CourseContentFragment : Fragment() {
 
     override fun onPause(){
         super.onPause()
+        //Update time needs to be changed to not be hardcoded, Change depending on what topic they study and what technique they use!!!!!
         FirebaseService.updateTime(courseCode!!, courseTime/3600000, "Fundamentals", 0)
         FirebaseService.updateDayStudyTime(courseCode!!, courseTime/3600000)
     }

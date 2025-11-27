@@ -365,12 +365,12 @@ object FirebaseService {
     }
     fun updateTopicTime(name: String, timeAdd: Double, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic")
+        val technique1 = technique.toString()
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic/$technique1")
         ref.get().addOnSuccessListener { snapshot ->
             var time = snapshot.getValue(Double::class.java) ?: 0.0
             time += timeAdd
-            val userData = mapOf("TotalTime" to time)
-            ref.updateChildren(userData)
+            ref.setValue(time)
         }
     }
 
