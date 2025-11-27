@@ -102,7 +102,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/dateJonedLableProfile"
                 android:layout_marginTop="20dp"
-                android:text="Total Time Study" />
+                android:text="Total Time Studied" />
 
             <TextView
                 android:id="@+id/totalHourStudyProfile"
