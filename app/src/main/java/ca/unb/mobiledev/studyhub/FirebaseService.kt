@@ -97,6 +97,19 @@ object FirebaseService {
         }
     }
 
+    fun getTotalTime(callback: (Double) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/studyTime")
+
+        ref.get().addOnSuccessListener { snapshot ->
+            val time = snapshot.getValue(Double::class.java) ?: 0.0
+            callback(time)
+        }.addOnFailureListener {
+            Log.e("Username", "Could not receive date from database")
+            callback(0.0)
+        }
+    }
+
     fun getEmail(callback: (String?) -> Unit) {
         val user = auth.currentUser
         if (user != null) {
