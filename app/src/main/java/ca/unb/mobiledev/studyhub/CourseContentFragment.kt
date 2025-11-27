@@ -14,6 +14,7 @@ import com.google.firebase.firestore.Query
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
 
+
 class CourseContentFragment : Fragment() {
 
     private lateinit var courseCodeView: TextView
