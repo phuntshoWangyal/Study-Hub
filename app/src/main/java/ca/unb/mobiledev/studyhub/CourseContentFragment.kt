@@ -212,6 +212,7 @@ class CourseContentFragment : Fragment() {
 
 
     }
+    // In CourseContentFragment
     private fun restoreTimerState() {
         val running = prefs.getBoolean("timer_running", false)
 
@@ -222,11 +223,12 @@ class CourseContentFragment : Fragment() {
             return
         }
 
-        // Timer was running → continue counting from last start moment
+        // Timer was running → continue counting from last start moment (when onPause was called)
         val startRealtime = prefs.getLong("timer_start_realtime", 0L)
-        val now = SystemClock.elapsedRealtime()
 
-        // Rebuild the base so session time continues
+        // The base should be set so that chronometer displays 0:00:00 when it resumes.
+        // The elapsed time was already added to courseTime in onPause.
+        // If you want the chronometer to show the time since onPause, you do this:
         timerBase = startRealtime
         chronometer.base = timerBase
 
@@ -234,7 +236,6 @@ class CourseContentFragment : Fragment() {
         timerStarted = true
         playButton.setImageResource(R.drawable.pause)
     }
-
 
     private fun showEditCourseDialog() {
         val oldCode = courseCode ?: return
@@ -301,12 +302,44 @@ class CourseContentFragment : Fragment() {
             .show()
     }
 
+    // In CourseContentFragment
     override fun onPause(){
         super.onPause()
-        saveStudyStatsForTechnique()
-        FirebaseService.updateTime(courseCode!!, courseTime/3600000, "Fundamentals", 0)
-        FirebaseService.updateDayStudyTime(courseCode!!, courseTime/3600000)
 
+        // Check if the timer is running and the start time is saved
+        val running = prefs.getBoolean("timer_running", false)
+        if (running) {
+            // Calculate the elapsed time *up to this moment* (when the app is backgrounded)
+            val now = SystemClock.elapsedRealtime()
+            val startRealtime = prefs.getLong("timer_start_realtime", 0L)
+            val elapsedSessionMs = now - startRealtime
+
+            // Add the elapsed time to courseTime and then save it
+            courseTime += elapsedSessionMs
+
+            // Update the start time to now so the next time it restores, it counts from here (optional,
+            // but helps keep the persistent state clean if you resume the chronometer later)
+            prefs.edit()
+                .putLong("timer_start_realtime", now)
+                .apply()
+
+            // The chronometer on screen is stopped by the OS, but we need to stop its counting mechanism
+            // by resetting its base and stopping it explicitly to prevent issues if it was still active
+            chronometer.stop()
+            chronometer.base = now
+
+            // Note: We don't change timerStarted state yet, as the user didn't explicitly pause it.
+            // It's still logically "running" but paused in its calculation.
+        }
+
+        // Now save the updated total time
+        saveStudyStatsForTechnique()
+        // Update Firebase with the total time
+        // Note: Use a reliable method for courseCode check
+        courseCode?.let { code ->
+            FirebaseService.updateTime(code, courseTime / 3600000, "Fundamentals", 0)
+            FirebaseService.updateDayStudyTime(code, courseTime / 3600000)
+        }
     }
 
     private fun fetchTestSummary(testName: String) {
@@ -371,20 +404,25 @@ class CourseContentFragment : Fragment() {
             .apply()
     }
 
+    // In CourseContentFragment
     private fun chronometerStop(): Long {
         chronometer.stop()
 
         val now = SystemClock.elapsedRealtime()
-        val session = now - chronometer.base  // session duration
+        // This calculates the session time *since the chronometer's base was last set*
+        val session = now - chronometer.base
 
         // Add to total study time
         courseTime += session
 
-        // Reset persistent running flag
+        // Reset persistent running flag and start time
         prefs.edit()
             .putBoolean("timer_running", false)
-            .remove("timer_start_realtime")
+            .remove("timer_start_realtime") // Remove the start time
             .apply()
+
+        // Reset chronometer display to 0:00
+        chronometer.base = now
 
         return session
     }
