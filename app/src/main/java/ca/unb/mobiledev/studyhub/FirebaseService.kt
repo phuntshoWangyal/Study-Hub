@@ -279,6 +279,13 @@ object FirebaseService {
         ref.updateChildren(userData)
     }
 
+    fun updateCourseName(courseCode: String, newName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode")
+        val userData = mapOf("CourseName" to newName)
+        ref.updateChildren(userData)
+    }
+
     fun getCourseList(callback: (List<String>) -> Unit){
         val uid = auth.currentUser?.uid
         val coursesRef = FirebaseDatabase.getInstance()

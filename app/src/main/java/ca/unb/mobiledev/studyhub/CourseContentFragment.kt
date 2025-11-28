@@ -275,12 +275,16 @@ class CourseContentFragment : Fragment() {
                 }
 
                 (activity as? MainPage)?.updateCourse(oldCode, newCode, newName)
+                /*This Function exists in different branch, delete comments when merged
+                FirebaseService.updateCourse(courseCode!!, newCode)
+                 */
+                FirebaseService.updateCourseName(courseCode!!, newName)
 
-                // update local state + UI
                 courseCode = newCode
                 courseName = newName
                 courseCodeView.text = newCode
                 topicNameView.text = newName
+
             }
             .setNeutralButton("Delete course") { _, _ ->
                 showDeleteConfirmDialog(oldCode)
