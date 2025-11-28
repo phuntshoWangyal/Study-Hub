@@ -132,7 +132,7 @@
                     android:id="@+id/testscore_button"
                     android:layout_marginEnd="20dp"
                     >
-                    
+
                 </ImageView>
             </LinearLayout>
             <LinearLayout
@@ -157,7 +157,7 @@
 
 
     </androidx.cardview.widget.CardView>
-    
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -165,128 +165,199 @@
         android:layout_marginStart="25dp"
         android:layout_marginEnd="25dp"
         app:cardCornerRadius="20dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="20dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Topic"
-                    android:id="@+id/topicLabel"
-                    android:layout_weight="1"
-                    android:layout_marginTop="30dp"
-                    android:textColor="@color/red"
-                    android:layout_marginStart="40dp">
 
-                </TextView>
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:id="@+id/topicMoreButton"
-                    android:src="@drawable/options_icon"
-                    app:tint="@color/red"
-                    android:layout_marginEnd="20dp"
-                    android:layout_marginTop="30dp"
-                    >
-
-                </ImageView>
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Topic name"
-                android:layout_marginStart="80dp"
-                android:id="@+id/topicName"
-                >
-                
-            </TextView>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Study time"
-                android:layout_marginStart="80dp"
-                android:id="@+id/studyTime"
-                >
-
-            </TextView>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
-                <Chronometer
-                    android:id="@+id/chronometer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="24sp" />
-            </LinearLayout>
-
+            <!-- Top row: Topic label + 3 dots -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="30dp"
-                android:id="@+id/pdfRow"
-                >
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/topicLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Topic"
+                    android:textColor="@color/red"
+                    android:layout_marginStart="40dp" />
+
                 <ImageView
+                    android:id="@+id/topicMoreButton"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:src="@drawable/options_icon"
+                    app:tint="@color/red" />
+            </LinearLayout>
+
+            <!-- Topic name like "Quickie" -->
+            <TextView
+                android:id="@+id/topicName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Topic name"
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_bold"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Stats row: Total time | Sessions -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="16dp">
+
+                <!-- Total study time -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total time"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/studyTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00:00"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="32dp"
+                    android:background="@android:color/darker_gray" />
+
+                <!-- Number of sessions -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Number of Sessions"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/sessionCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- NEW: Study technique selector in the middle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingStart="40dp"
+                android:paddingEnd="40dp"
+                android:paddingBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Technique:"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp" />
+
+                <Spinner
+                    android:id="@+id/techniqueSpinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- Notes row (PDF icons + arrows) -->
+            <LinearLayout
+                android:id="@+id/pdfRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:paddingStart="40dp"
+                android:paddingEnd="40dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/leftArrow"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:src="@drawable/ic_arrow_left"
-                    android:layout_marginEnd="20dp"
-                    android:id="@+id/leftArrow"
-                    >
-                </ImageView>
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/pdf_icon">
+                    android:layout_marginEnd="16dp" />
 
-                </ImageView>
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/pdf_icon">
-
-                </ImageView>
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/pdf_icon">
-
-                </ImageView>
-                <View
+                <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_weight="1">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_weight="1"
+                    android:id="@+id/pdfContainer" />
 
-                </View>
                 <ImageView
+                    android:id="@+id/rightArrow"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:src="@drawable/ic_arrow_right"
-                    android:id="@+id/rightArrow"
-                    >
-
-                </ImageView>
+                    android:layout_marginStart="16dp" />
             </LinearLayout>
 
+            <!-- Current session timer JUST ABOVE play button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp">
+
+                <Chronometer
+                    android:id="@+id/chronometer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- Play button (start session) -->
             <ImageView
+                android:id="@+id/playButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/outline_arrow_right_24"
-                android:layout_gravity="center"
-                android:id="@+id/playButton">
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/outline_arrow_right_24" />
 
-            </ImageView>
         </LinearLayout>
-                       
+
     </androidx.cardview.widget.CardView>
+
+
 
 </LinearLayout>

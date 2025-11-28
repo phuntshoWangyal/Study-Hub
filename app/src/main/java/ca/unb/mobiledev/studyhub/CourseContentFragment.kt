@@ -12,9 +12,13 @@ import android.widget.Toast
 import android.widget.Chronometer
 import androidx.fragment.app.Fragment
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
+import com.google.firebase.firestore.SetOptions
+import android.widget.Spinner
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
+
 
 
 
@@ -32,7 +36,7 @@ class CourseContentFragment : Fragment() {
     private lateinit var editCourseButton: ImageView
     private lateinit var chronometer: Chronometer
 
-
+    private lateinit var techniqueSpinner: Spinner
 
     private lateinit var topicMoreButton: ImageView
 
@@ -40,9 +44,20 @@ class CourseContentFragment : Fragment() {
 
     private var courseCode: String? = null
     private var courseName: String? = null
+    private var topicId: String? = null
+    private var topicName: String? = null
 
-    private var courseTime: Double = 0.0
+    private var courseTime: Long = 0L
     private val db = FirebaseFirestore.getInstance()
+
+    private lateinit var sessionCountView: TextView
+    private var sessionCount: Int = 0
+
+    private lateinit var techniques: List<String>
+    private var allTechniqueStats = mutableMapOf<String, Pair<Long, Int>>()
+    private var currentTechnique: String = "Your own Technique"
+    private var timerStarted: Boolean = false
+
 
 
 
@@ -66,10 +81,7 @@ class CourseContentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var timerStarted = false
-        var hours: Int
-        var minutes: Int
-        var seconds: Int
+
 
         courseCodeView = view.findViewById(R.id.courseContentCode)
         testTitleView  = view.findViewById(R.id.testTitle)
@@ -82,14 +94,81 @@ class CourseContentFragment : Fragment() {
         playButton     = view.findViewById(R.id.playButton)
         chronometer    = view.findViewById(R.id.chronometer)
 
+        sessionCountView = view.findViewById(R.id.sessionCount)
+        sessionCountView.text = sessionCount.toString()
+
+        techniqueSpinner = view.findViewById(R.id.techniqueSpinner)
+
+        techniques = listOf(
+            "Your own Technique",
+            "Pomodoro Technique",
+            "Feynman Technique"
+        )
+
+
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            techniques
+        )
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        techniqueSpinner.adapter = spinnerAdapter
+        currentTechnique = techniques[0]
+        techniqueSpinner.setSelection(0)
+
+
+
+        techniqueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val selected = techniques[position]
+
+                // DO NOT SWITCH if timer is running (and selection changes)
+                if (timerStarted && selected != currentTechnique) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Stop the timer before changing technique",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    val idx = techniques.indexOf(currentTechnique)
+                    if (idx >= 0) techniqueSpinner.setSelection(idx)
+                    return
+                }
+
+                // Do nothing if the same item is selected
+                if (selected == currentTechnique) return
+
+                // Save the stats for the technique
+                if (!courseCode.isNullOrEmpty()) {
+
+                    saveStudyStatsForTechnique()
+                }
+
+                // SWITCH to the new technique
+                currentTechnique = selected
+
+
+                if (!courseCode.isNullOrEmpty()) {
+                    loadStudyStatsForTechnique(courseCode!!, currentTechnique)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+
 
         courseCodeView.text = courseCode ?: "Course Code"
         topicNameView.text = courseName ?: "Topic name"
-        studyTimeView.text = "Session Study Time: 00:00:00"
-        if (!courseCode.isNullOrEmpty()) {
-            fetchTestSummary(courseCode!!)
-        }
+        studyTimeView.text = "00:00:00"
 
+        if (!courseCode.isNullOrEmpty()) {
+            loadStudyStatsForTechnique(courseCode!!, currentTechnique)
+        }
 
 
         leftArrow.setOnClickListener {
@@ -99,24 +178,25 @@ class CourseContentFragment : Fragment() {
             Toast.makeText(requireContext(), "Right arrow clicked", Toast.LENGTH_SHORT).show()
         }
         playButton.setOnClickListener {
-            if(timerStarted){
-                courseTime = courseTime + chronometerStop()
-                hours = (courseTime/3600000).toInt()
-                minutes = ((courseTime - hours*3600000) / 60000).toInt()
-                seconds = ((courseTime - hours*3600000 - minutes*60000)/1000).toInt()
-                val hoursStr = String.format("%02d", hours)
-                val minStr = String.format("%02d", minutes)
-                val secStr = String.format("%02d", seconds)
-                studyTimeView.text = "Session Study Time: $hoursStr:$minStr:$secStr"
+            if (timerStarted) {
+                // stop and add this session to total for *current technique*
+                courseTime += chronometerStop()
+                updateStudyTimeLabel(courseTime)
+
+                sessionCount++
+                sessionCountView.text = sessionCount.toString()
+
+                saveStudyStatsForTechnique()
+
                 timerStarted = false
                 playButton.setImageResource(R.drawable.outline_arrow_right_24)
-            }
-            else{
+            } else {
                 chronometerStart()
                 timerStarted = true
                 playButton.setImageResource(R.drawable.pause)
             }
         }
+
 
         val editCourseCard = view.findViewById<androidx.cardview.widget.CardView>(R.id.editCourseCard)
 
@@ -194,8 +274,10 @@ class CourseContentFragment : Fragment() {
 
     override fun onPause(){
         super.onPause()
+        saveStudyStatsForTechnique()
         FirebaseService.updateTime(courseCode!!, courseTime/3600000, "Fundamentals", 0)
         FirebaseService.updateDayStudyTime(courseCode!!, courseTime/3600000)
+
     }
 
     private fun fetchTestSummary(code: String) {
@@ -222,17 +304,44 @@ class CourseContentFragment : Fragment() {
             }
     }
 
+    private fun updateStudyTimeLabel(totalMs: Long) {
+        val hours = (totalMs / 3600000).toInt()
+        val minutes = ((totalMs - hours * 3600000) / 60000).toInt()
+        val seconds = ((totalMs - hours * 3600000 - minutes * 60000) / 1000).toInt()
+
+        val hoursStr = String.format("%02d", hours)
+        val minStr = String.format("%02d", minutes)
+        val secStr = String.format("%02d", seconds)
+        studyTimeView.text = "$hoursStr:$minStr:$secStr"
+    }
+
     private fun chronometerStart(){
         chronometer.base = SystemClock.elapsedRealtime()
         chronometer.start()
     }
 
-    private fun chronometerStop(): Int{
+    private fun chronometerStop(): Long{
         chronometer.stop()
         val timeStudied = SystemClock.elapsedRealtime() - chronometer.base
-        return timeStudied.toInt()
+        return timeStudied
     }
 
+
+    private fun saveStudyStatsForTechnique() {
+        val code = courseCode ?: return
+        val technique = currentTechnique
+
+        val data = hashMapOf<String, Any>(
+            "totalStudyMs" to courseTime,
+            "sessionCount" to sessionCount
+        )
+
+        db.collection("courses")
+            .document(code)
+            .collection("techniques")
+            .document(technique)
+            .set(data, SetOptions.merge())
+    }
 
 
     private fun dp(v: Int): Int = (resources.displayMetrics.density * v).toInt()
@@ -247,4 +356,71 @@ class CourseContentFragment : Fragment() {
             return frag
         }
     }
+    private fun loadStudyStatsForTechnique(code: String, technique: String) {
+        // Change loadStudyStatsForTechnique to a listener
+        db.collection("courses")
+            .document(code)
+            .collection("techniques")
+            .document(technique)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    // Handle error
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val totalMs = snapshot.getLong("totalStudyMs") ?: 0L
+                    val sessions = snapshot.getLong("sessionCount") ?: 0L
+
+                    // Only update local state if this is the currently selected technique
+                    if (technique == currentTechnique) {
+                        courseTime = totalMs
+                        sessionCount = sessions.toInt()
+
+                        sessionCountView.text = sessionCount.toString()
+                        updateStudyTimeLabel(totalMs)
+
+                        // reset live session timer display
+                        chronometer.base = SystemClock.elapsedRealtime()
+                        chronometer.stop()
+                    }
+                }
+            }
+    }
+    private fun fetchAllTechniqueStats(code: String) {
+        db.collection("courses")
+            .document(code)
+            .collection("techniques")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                allTechniqueStats.clear()
+                for (document in snapshot.documents) {
+                    val technique = document.id
+                    val totalMs = document.getLong("totalStudyMs") ?: 0L
+                    val sessions = document.getLong("sessionCount")?.toInt() ?: 0
+
+                    allTechniqueStats[technique] = Pair(totalMs, sessions)
+                }
+
+                updateStatsForCurrentTechnique()
+            }
+            .addOnFailureListener {
+                // Handle error
+            }
+    }
+    private fun updateStatsForCurrentTechnique() {
+        val (totalMs, sessions) = allTechniqueStats[currentTechnique] ?: Pair(0L, 0)
+
+        courseTime = totalMs
+        sessionCount = sessions
+
+        sessionCountView.text = sessionCount.toString()
+        updateStudyTimeLabel(totalMs)
+
+        // reset live session timer display
+        chronometer.base = SystemClock.elapsedRealtime()
+        chronometer.stop()
+    }
+
+
 }

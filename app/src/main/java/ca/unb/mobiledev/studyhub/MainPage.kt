@@ -16,6 +16,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import java.lang.Exception
 
 
@@ -27,6 +29,8 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
     private var currentFragmentTag: String = "home"
 
     lateinit var bottomNav : BottomNavigationView
+    private val db = FirebaseFirestore.getInstance()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +65,10 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
                 else -> false
             }
         }
+        val settings = FirebaseFirestoreSettings.Builder()
+            .setPersistenceEnabled(true) // <-- This is the key setting
+            .build()
+        db.firestoreSettings = settings
 
     }
     private fun updateAddButtonIcon() {
