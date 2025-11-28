@@ -390,19 +390,22 @@ class CourseContentFragment : Fragment() {
     }
 
     private fun saveStudyStatsForTechnique() {
-        val code = courseCode ?: return
-        val technique = currentTechnique
+        val technique = currentTechnique //TECHNIQUE IS EXPECTED AS INT IN FUNCTION, CHANGE IT!!!!
 
+        /*
         val data = hashMapOf<String, Any>(
-            "totalStudyMs" to courseTime,
+            "totalStudyMs" to courseTime, //CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
             "sessionCount" to sessionCount
         )
-
+        database is not correct
         db.collection("courses")
             .document(code)
             .collection("techniques")
             .document(technique)
             .set(data, SetOptions.merge())
+        */
+        FirebaseService.updateTopicTime(courseCode!!, courseTime.toDouble(), topicName!!, technique)
+        FirebaseService.updateSession(courseCode!!, topicName!!, sessionCount)
     }
 
 
@@ -418,9 +421,10 @@ class CourseContentFragment : Fragment() {
             return frag
         }
     }
-    private fun loadStudyStatsForTechnique(code: String, technique: String) {
+    private fun loadStudyStatsForTechnique(topic: String, technique: Int) {
         // Change loadStudyStatsForTechnique to a listener
-        db.collection("courses")
+
+        /*db.collection("courses")
             .document(code)
             .collection("techniques")
             .document(technique)
@@ -448,9 +452,17 @@ class CourseContentFragment : Fragment() {
                     }
                 }
             }
+            */
+        FirebaseService.getCourseTimeByTechnique(courseCode!!, topic, technique){ time ->
+            courseTime = time.toLong()//CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
+            FirebaseService.getSessions(courseCode!!, topic){ sessions ->
+                sessionCount = sessions
+            }
+        }
     }
-    private fun fetchAllTechniqueStats(code: String) {
-        db.collection("courses")
+
+    private fun fetchAllTechniqueStats(technique: Int) {
+        /*db.collection("courses")
             .document(code)
             .collection("techniques")
             .get()
@@ -469,11 +481,23 @@ class CourseContentFragment : Fragment() {
             .addOnFailureListener {
                 // Handle error
             }
+         */
+        //TIME IS STORED IN HOURS NOT MS!!!!!!!!
+        FirebaseService.getCourseTimeByTechnique(courseCode!!, topicName!!, technique){ time ->
+
+            FirebaseService.getSessions(courseCode!!, topicName!!){ sessions ->
+            //SAVE TIME IN HOURS NOT MS!!!!!
+            //USE YOUR LOGIC TO SAVE IT IN RIGHT VALUES HERE!!!!!
+            }
+        }
     }
+
+
     private fun updateStatsForCurrentTechnique() {
+        //TIME IS STORED IN HOURS NOT MS!!!!!!!!
         val (totalMs, sessions) = allTechniqueStats[currentTechnique] ?: Pair(0L, 0)
 
-        courseTime = totalMs
+        courseTime = totalMs //CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
         sessionCount = sessions
 
         sessionCountView.text = sessionCount.toString()
