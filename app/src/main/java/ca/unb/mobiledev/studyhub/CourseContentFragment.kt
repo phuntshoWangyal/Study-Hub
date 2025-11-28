@@ -212,7 +212,6 @@ class CourseContentFragment : Fragment() {
 
 
     }
-    // In CourseContentFragment
     private fun restoreTimerState() {
         val running = prefs.getBoolean("timer_running", false)
 
@@ -223,12 +222,11 @@ class CourseContentFragment : Fragment() {
             return
         }
 
-        // Timer was running → continue counting from last start moment (when onPause was called)
+        // Timer was running → continue counting from last start moment
         val startRealtime = prefs.getLong("timer_start_realtime", 0L)
+        val now = SystemClock.elapsedRealtime()
 
-        // The base should be set so that chronometer displays 0:00:00 when it resumes.
-        // The elapsed time was already added to courseTime in onPause.
-        // If you want the chronometer to show the time since onPause, you do this:
+        // Rebuild the base so session time continues
         timerBase = startRealtime
         chronometer.base = timerBase
 
@@ -236,6 +234,7 @@ class CourseContentFragment : Fragment() {
         timerStarted = true
         playButton.setImageResource(R.drawable.pause)
     }
+
 
     private fun showEditCourseDialog() {
         val oldCode = courseCode ?: return

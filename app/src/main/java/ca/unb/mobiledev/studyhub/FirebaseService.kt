@@ -334,10 +334,6 @@ object FirebaseService {
     }
 
     fun getCourseTime(name: String?, callback: (Double) -> Unit){
-        if(name == null){
-            callback(0.0)
-            return
-        }
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$name/StudiedTime")
 
@@ -350,6 +346,20 @@ object FirebaseService {
         }
     }
 
+    fun getCourseTimeByTechnique(courseCode: String, topic: String, technique: Int, callback: (Double) -> Unit){
+        val uid = auth.currentUser?.uid
+        val techniqueString = technique.toString()
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/$techniqueString")
+
+        ref.get().addOnSuccessListener { snapshot ->
+            val time = snapshot.getValue(Double::class.java) ?: 0.0
+            callback(time)
+        }.addOnFailureListener {
+            Log.e("Getting time", "Could not receive time from database")
+            callback(0.0)
+        }
+
+    }
     fun updateTime(name: String, timeAdd: Long, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$name/StudiedTime")
@@ -360,7 +370,7 @@ object FirebaseService {
             val userData = mapOf("StudiedTime" to time)
             reference.updateChildren(userData)
             updateUserTime(timeAdd)
-            updateTopicTime(name, timeAdd, topic, technique)
+            updateTopicTime(name, timeAdd.toDouble(), topic, technique)
         }.addOnFailureListener { e ->
             Log.e("Time of Course", e.toString())
         }
@@ -377,39 +387,32 @@ object FirebaseService {
             ref2.updateChildren(userData)
         }
     }
-//    fun updateTopicTime(name: String, timeAdd: Double, topic: String, technique: Int){
-//        val uid = auth.currentUser?.uid
-//        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic")
-//        ref.get().addOnSuccessListener { snapshot ->
-//            var time = snapshot.getValue(Double::class.java) ?: 0.0
-//            time += timeAdd
-//            val userData = mapOf(technique to time)
-//            ref.updateChildren(userData)
-//        }
-//    }
-    fun updateTopicTime(name: String, timeAdd: Long, topic: String, technique: Int){
+
+    fun updateTopicTime(name: String, timeAdd: Double, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
-        val topicRef = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic")
-
-        topicRef.get().addOnSuccessListener { snapshot ->
-            val time = when {
-                snapshot.child("TotalTime").exists() ->
-                    snapshot.child("TotalTime").getValue(Double::class.java) ?: 0.0
-
-                snapshot.child("timeOfStudy").exists() ->
-                    snapshot.child("timeOfStudy").getValue(Double::class.java) ?: 0.0
-
-                else -> 0.0
-            }
-
-            val newTime = time + timeAdd
-            val userData = mapOf("TotalTime" to newTime)
-            topicRef.updateChildren(userData)
-        }.addOnFailureListener { e ->
-            Log.e("TopicTime", "Failed to update topic time", e)
+        val technique1 = technique.toString()
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic/$technique1")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            ref.setValue(time)
         }
     }
 
+    fun updateSession(courseCode: String, topic: String, sessionsToChange: Int){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/Sessions")
+        ref.setValue(sessionsToChange)
+    }
+
+    fun getSessions(courseCode: String, topic: String, callback: (Int) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/Sessions")
+        ref.get().addOnSuccessListener { snapshot ->
+            val sessions = snapshot.getValue(Int::class.java) ?: 0
+            callback(sessions)
+        }
+    }
 
     fun updateDayStudyTime(name: String, timeAdd: Long){
         val year = getCurrentYear()
