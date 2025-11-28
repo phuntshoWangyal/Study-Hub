@@ -190,6 +190,23 @@ object FirebaseService {
             }
     }
 
+    fun getTestTopics(courseCode: String, testName: String, callback: (List<String>) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = FirebaseDatabase.getInstance()
+            .getReference("users/$uid/Courses/$courseCode/Tests/$testName")
+        ref.get()
+            .addOnSuccessListener { snapshot ->
+                val courseNames = mutableListOf<String>()
+                for (snapshot in snapshot.children) {
+                    courseNames.add(snapshot.key!!)
+                }
+                callback(courseNames)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Tests topics Fetch", "Failed to fetch topics")
+            }
+    }
+
     fun createTest(courseName: String, testName: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
@@ -366,7 +383,7 @@ object FirebaseService {
 //        ref.get().addOnSuccessListener { snapshot ->
 //            var time = snapshot.getValue(Double::class.java) ?: 0.0
 //            time += timeAdd
-//            val userData = mapOf("TotalTime" to time)
+//            val userData = mapOf(technique to time)
 //            ref.updateChildren(userData)
 //        }
 //    }

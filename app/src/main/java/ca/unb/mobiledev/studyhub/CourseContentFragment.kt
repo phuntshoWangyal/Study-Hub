@@ -1,5 +1,6 @@
 package ca.unb.mobiledev.studyhub
 
+import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.LayoutInflater
@@ -58,6 +59,11 @@ class CourseContentFragment : Fragment() {
     private var currentTechnique: String = "Your own Technique"
     private var timerStarted: Boolean = false
 
+    private var timerBase: Long = 0L
+
+    private val prefs by lazy {
+        requireContext().getSharedPreferences("timer_pref", Context.MODE_PRIVATE)
+    }
 
 
 
@@ -93,7 +99,7 @@ class CourseContentFragment : Fragment() {
         rightArrow     = view.findViewById(R.id.rightArrow)
         playButton     = view.findViewById(R.id.playButton)
         chronometer    = view.findViewById(R.id.chronometer)
-
+        restoreTimerState()
         sessionCountView = view.findViewById(R.id.sessionCount)
         sessionCountView.text = sessionCount.toString()
 
@@ -206,6 +212,29 @@ class CourseContentFragment : Fragment() {
 
 
     }
+    private fun restoreTimerState() {
+        val running = prefs.getBoolean("timer_running", false)
+
+        if (!running) {
+            // timer is not running → chronometer reset to 0
+            chronometer.stop()
+            chronometer.base = SystemClock.elapsedRealtime()
+            return
+        }
+
+        // Timer was running → continue counting from last start moment
+        val startRealtime = prefs.getLong("timer_start_realtime", 0L)
+        val now = SystemClock.elapsedRealtime()
+
+        // Rebuild the base so session time continues
+        timerBase = startRealtime
+        chronometer.base = timerBase
+
+        chronometer.start()
+        timerStarted = true
+        playButton.setImageResource(R.drawable.pause)
+    }
+
 
     private fun showEditCourseDialog() {
         val oldCode = courseCode ?: return
@@ -280,8 +309,9 @@ class CourseContentFragment : Fragment() {
 
     }
 
-    private fun fetchTestSummary(code: String) {
-        db.collection("courses").document(code)
+    private fun fetchTestSummary(testName: String) {
+        //wrong ai broo
+        /*db.collection("courses").document(code)
             .collection("tests")
             .limit(1)
             .get()
@@ -302,6 +332,17 @@ class CourseContentFragment : Fragment() {
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Failed to load tests", Toast.LENGTH_SHORT).show()
             }
+            */
+        FirebaseService.getTestTopics(courseCode!!, testName){ topics ->
+            if(topics.isEmpty()){
+                testTitleView.text = "No tests yet"
+                testTopicsView.text = ""
+            }
+            else {
+                testTitleView.text = testName
+                testTopicsView.text = "Includes $topics"
+            }
+        }
     }
 
     private fun updateStudyTimeLabel(totalMs: Long) {
@@ -315,17 +356,38 @@ class CourseContentFragment : Fragment() {
         studyTimeView.text = "$hoursStr:$minStr:$secStr"
     }
 
-    private fun chronometerStart(){
-        chronometer.base = SystemClock.elapsedRealtime()
+    private fun chronometerStart() {
+        val now = SystemClock.elapsedRealtime()
+
+        // Chronometer always starts from 0
+        timerBase = now
+        chronometer.base = timerBase
         chronometer.start()
+
+        // Save running state persistently
+        prefs.edit()
+            .putBoolean("timer_running", true)
+            .putLong("timer_start_realtime", now)   // only store the REAL time when started
+            .apply()
     }
 
-    private fun chronometerStop(): Long{
+    private fun chronometerStop(): Long {
         chronometer.stop()
-        val timeStudied = SystemClock.elapsedRealtime() - chronometer.base
-        return timeStudied
-    }
 
+        val now = SystemClock.elapsedRealtime()
+        val session = now - chronometer.base  // session duration
+
+        // Add to total study time
+        courseTime += session
+
+        // Reset persistent running flag
+        prefs.edit()
+            .putBoolean("timer_running", false)
+            .remove("timer_start_realtime")
+            .apply()
+
+        return session
+    }
 
     private fun saveStudyStatsForTechnique() {
         val code = courseCode ?: return
