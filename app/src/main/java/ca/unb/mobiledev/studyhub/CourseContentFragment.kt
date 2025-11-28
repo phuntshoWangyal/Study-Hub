@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.view.*
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.Chronometer
 import android.widget.EditText
 import android.widget.ImageView
@@ -113,6 +114,7 @@ class CourseContentFragment : Fragment() {
                 when(item.itemId) {
                     R.id.optionEditTest -> {
                         Toast.makeText(requireContext(), "Edit Test clicked", Toast.LENGTH_SHORT).show()
+                        showEditTestDialog(courseCode!!, testTitleView.text.toString())
                         true
                     }
                     R.id.optionAddTest -> {
@@ -132,6 +134,83 @@ class CourseContentFragment : Fragment() {
         }
 
     }
+
+    private fun showEditTestDialog(courseCode: String, testName: String) {
+
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.edit_test_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_test_name)
+        val gradeInput = dialogView.findViewById<EditText>(R.id.edit_test_grade)
+        val topicsContainer = dialogView.findViewById<LinearLayout>(R.id.layout_topics_list)
+
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_save_edit_test)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel_edit_test)
+
+        // Pre-fill existing name
+        nameInput.setText(testName)
+
+        val dialog = builder.setView(dialogView).create()
+
+        // Load topics dynamically
+        FirebaseService.getTopics(courseCode) { topics ->
+            topicsContainer.removeAllViews()
+
+            for (topic in topics) {
+                val checkbox = CheckBox(requireContext())
+                checkbox.text = topic
+                checkbox.isChecked = false
+                topicsContainer.addView(checkbox)
+            }
+        }
+
+        confirmButton.setOnClickListener {
+            val newName = nameInput.text.toString().trim()
+            val gradeText = gradeInput.text.toString().trim()
+
+            if (newName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter new test name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val grade = gradeText.toDoubleOrNull()
+            if (grade == null) {
+                Toast.makeText(requireContext(), "Enter valid grade", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Collect selected topics
+            val selectedTopics = mutableListOf<String>()
+            for (i in 0 until topicsContainer.childCount) {
+                val checkBox = topicsContainer.getChildAt(i) as CheckBox
+                if (checkBox.isChecked) {
+                    selectedTopics.add(checkBox.text.toString())
+                }
+            }
+
+            // Update test name
+            FirebaseService.updateTest(courseCode, testName, newName)
+
+            // Update grade
+            FirebaseService.setGrade(courseCode, newName, grade)
+
+            // Add selected topics
+            for (topic in selectedTopics) {
+                FirebaseService.addTopic(courseCode, newName, topic)
+            }
+
+            Toast.makeText(requireContext(), "Test updated", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
     private fun showAddTestDialog() {
         val builder = AlertDialog.Builder(requireContext())
         val dialogView = LayoutInflater.from(requireContext())
