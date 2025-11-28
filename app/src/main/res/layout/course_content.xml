@@ -96,7 +96,7 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:id="@+id/more_button"
+                    android:id="@+id/option_test_button"
                     android:src="@drawable/options_icon"
                     app:tint="@color/red"
                     android:layout_marginEnd="25dp">
