@@ -1,9 +1,12 @@
 package ca.unb.mobiledev.studyhub
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.*
+import android.widget.Button
 import android.widget.Chronometer
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -114,6 +117,7 @@ class CourseContentFragment : Fragment() {
                     }
                     R.id.optionAddTest -> {
                         Toast.makeText(requireContext(), "Add Test clicked", Toast.LENGTH_SHORT).show()
+                        showAddTestDialog()
                         true
                     }
                     R.id.optionRemoveTest -> {
@@ -128,6 +132,38 @@ class CourseContentFragment : Fragment() {
         }
 
     }
+    private fun showAddTestDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.add_test_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_test_name)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_add_test)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+
+        val dialog = builder.setView(dialogView).create()
+
+        confirmButton.setOnClickListener {
+            val testName = nameInput.text.toString().trim()
+
+            if (testName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter test name", Toast.LENGTH_SHORT).show()
+            } else {
+
+                FirebaseService.createTest(courseCode!!, testName)
+
+                Toast.makeText(requireContext(), "Test created", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 
     override fun onPause() {
         super.onPause()

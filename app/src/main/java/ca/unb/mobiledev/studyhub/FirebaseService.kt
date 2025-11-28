@@ -196,7 +196,7 @@ object FirebaseService {
     fun createTest(courseName: String, testName: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
-        val userData = mapOf("Grade" to null)
+        val userData = mapOf("Grade" to 0.0)
         ref.updateChildren(userData)
     }
 
