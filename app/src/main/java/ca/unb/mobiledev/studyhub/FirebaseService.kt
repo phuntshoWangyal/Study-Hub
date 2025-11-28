@@ -214,6 +214,18 @@ object FirebaseService {
         ref.updateChildren(userData)
     }
 
+    fun updateTest(name: String, testName: String, newTestName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$testName")
+        ref.setValue(newTestName)
+    }
+
+    fun updateTopic(name: String, topicName: String, newTopicName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$topicName")
+        ref.setValue(newTopicName)
+    }
+
     fun setGrade(courseName:String, testName: String, grade: Double){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
@@ -264,6 +276,8 @@ object FirebaseService {
         val userData = mapOf(name to name)
         ref.updateChildren(userData)
     }
+
+
 
     fun getCourseList(callback: (List<String>) -> Unit){
         val uid = auth.currentUser?.uid
