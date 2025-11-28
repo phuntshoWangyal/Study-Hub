@@ -38,6 +38,23 @@
 
             </TextView>
 
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                />
+            <TextView
+                android:id="@+id/errorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/red"
+                android:visibility="gone"
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                />
+
             <EditText
                 android:id="@+id/usernameTextField"
                 android:layout_width="match_parent"

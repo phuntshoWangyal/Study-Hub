@@ -4,10 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import ca.unb.mobiledev.studyhub.AddCourseFragment.AddCourseDialogListener
@@ -28,13 +31,16 @@ class LoginPage : AppCompatActivity() {
 
         }
 
+        val errorText: TextView = findViewById(R.id.errorText)
         val passwordField: EditText = findViewById(R.id.passwordLoginField)
         passwordField.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-
         FirebaseApp.initializeApp(this)
 
         val loginButton: Button = findViewById(R.id.loginButton)
         loginButton.setOnClickListener {
+            errorText.visibility = View.INVISIBLE
+            loginButton.isEnabled = false
+            loginButton.alpha = 0.7f
             val email = findViewById<EditText>(R.id.emailLoginField).text.toString()
             val password = findViewById<EditText>(R.id.passwordLoginField).text.toString()
             if(email != "" && password != ""){
@@ -79,6 +85,10 @@ class LoginPage : AppCompatActivity() {
                         }
                     },
                     onError = { error ->
+                        errorText.text = "Entered Username or Password is incorrect"
+                        errorText.visibility = View.VISIBLE
+                        loginButton.isEnabled = true
+                        loginButton.alpha = 1f
                         Log.e("Logging in", "Authentification fail")
                     }
                 )
