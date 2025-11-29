@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit Test"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- New Test Name -->
+    <EditText
+        android:id="@+id/edit_test_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="New Test Name"
+        android:layout_marginBottom="12dp"
+        android:inputType="textCapWords" />
+
+    <!-- Grade -->
+    <EditText
+        android:id="@+id/edit_test_grade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Grade (%)"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Topic list label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Related Topics"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Scrollable list of dynamically added CheckBoxes -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:padding="4dp"
+        android:background="#EEEEEE">
+
+        <LinearLayout
+            android:id="@+id/topics_list_layout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </ScrollView>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="20dp">
+
+        <Button
+            android:id="@+id/btn_cancel_edit_test"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel" />
+
+        <Button
+            android:id="@+id/btn_confirm_edit_test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:backgroundTint="@color/red"
+            />
+    </LinearLayout>
+
+</LinearLayout>

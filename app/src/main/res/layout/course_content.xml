@@ -96,7 +96,7 @@
                 </TextView>
 
                 <ImageView
-                    android:id="@+id/more_button"
+                    android:id="@+id/option_test_button"
                     android:layout_width="20dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="25dp"

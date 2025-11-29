@@ -64,8 +64,8 @@ object FirebaseService {
             Log.i("Password", "Password was changed")
         }
             ?.addOnFailureListener {
-            Log.e("Password", "Password was not changed")
-        }
+                Log.e("Password", "Password was not changed")
+            }
     }
 
     fun getDate(callback: (String?) -> Unit){
@@ -226,6 +226,11 @@ object FirebaseService {
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName/Topics")
         val userData = mapOf(topicName to topicName)
         ref.updateChildren(userData)
+    }
+    fun updateTest(name: String, testName: String, newTestName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$testName")
+        ref.setValue(newTestName)
     }
 
     fun setGrade(courseName:String, testName: String, grade: Double){
@@ -392,6 +397,18 @@ object FirebaseService {
             val ref2 = realtimeDb.getReference("users/$uid")
             val userData = mapOf("studyTime" to time)
             ref2.updateChildren(userData)
+        }
+    }
+    fun updateTopic(courseCode: String, topicName: String, newTopic: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics")
+        ref.child(topicName).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val courseData = snapshot.value
+                ref.child(newTopic).setValue(courseData).addOnSuccessListener {
+                    ref.child(topicName).removeValue()
+                }
+            }
         }
     }
 

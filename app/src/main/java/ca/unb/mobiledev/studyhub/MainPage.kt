@@ -66,7 +66,7 @@ class MainPage : AppCompatActivity(),AddCourseFragment.AddCourseDialogListener,
             }
         }
         val settings = FirebaseFirestoreSettings.Builder()
-            .setPersistenceEnabled(true) // <-- This is the key setting
+            .setPersistenceEnabled(true)
             .build()
         db.firestoreSettings = settings
 

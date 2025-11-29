@@ -15,12 +15,12 @@ import androidx.fragment.app.Fragment
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
-import com.google.firebase.firestore.SetOptions
 import android.widget.Spinner
 import android.widget.ArrayAdapter
 import android.widget.AdapterView
-
-
+import android.widget.PopupMenu
+import android.widget.Button
+import android.widget.CheckBox
 
 
 class CourseContentFragment : Fragment() {
@@ -56,7 +56,7 @@ class CourseContentFragment : Fragment() {
 
     private lateinit var techniques: List<String>
     private var allTechniqueStats = mutableMapOf<String, Pair<Long, Int>>()
-    private var currentTechnique: String = "Your own Technique"
+    private var currentTechniqueIndex: Int = 0
     private var timerStarted: Boolean = false
 
     private var timerBase: Long = 0L
@@ -81,7 +81,6 @@ class CourseContentFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // use your existing XML layout here
         return inflater.inflate(R.layout.course_content, container, false)
     }
 
@@ -119,8 +118,8 @@ class CourseContentFragment : Fragment() {
         )
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         techniqueSpinner.adapter = spinnerAdapter
-        currentTechnique = techniques[0]
-        techniqueSpinner.setSelection(0)
+        currentTechniqueIndex = 0
+        techniqueSpinner.setSelection(currentTechniqueIndex)
 
 
 
@@ -131,22 +130,20 @@ class CourseContentFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
-                val selected = techniques[position]
-
-                // DO NOT SWITCH if timer is running (and selection changes)
-                if (timerStarted && selected != currentTechnique) {
+                if (timerStarted && position != currentTechniqueIndex) {
                     Toast.makeText(
                         requireContext(),
                         "Stop the timer before changing technique",
                         Toast.LENGTH_SHORT
                     ).show()
-                    val idx = techniques.indexOf(currentTechnique)
-                    if (idx >= 0) techniqueSpinner.setSelection(idx)
+
+                    // Reset spinner back to the old technique
+                    techniqueSpinner.setSelection(currentTechniqueIndex)
                     return
                 }
 
                 // Do nothing if the same item is selected
-                if (selected == currentTechnique) return
+                if (position == currentTechniqueIndex) return
 
                 // Save the stats for the technique
                 if (!courseCode.isNullOrEmpty()) {
@@ -155,11 +152,11 @@ class CourseContentFragment : Fragment() {
                 }
 
                 // SWITCH to the new technique
-                currentTechnique = selected
+                currentTechniqueIndex = position
 
 
                 if (!courseCode.isNullOrEmpty()) {
-                    loadStudyStatsForTechnique(courseCode!!, currentTechnique)
+                    loadStudyStatsForTechnique(courseCode!!, currentTechniqueIndex)
                 }
             }
 
@@ -173,7 +170,7 @@ class CourseContentFragment : Fragment() {
         studyTimeView.text = "00:00:00"
 
         if (!courseCode.isNullOrEmpty()) {
-            loadStudyStatsForTechnique(courseCode!!, currentTechnique)
+            loadStudyStatsForTechnique(courseCode!!, currentTechniqueIndex)
         }
 
 
@@ -184,6 +181,10 @@ class CourseContentFragment : Fragment() {
             Toast.makeText(requireContext(), "Right arrow clicked", Toast.LENGTH_SHORT).show()
         }
         playButton.setOnClickListener {
+            if (topicName == null) {
+                Toast.makeText(requireContext(), "Create or select a topic first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             if (timerStarted) {
                 // stop and add this session to total for *current technique*
                 courseTime += chronometerStop()
@@ -202,12 +203,45 @@ class CourseContentFragment : Fragment() {
                 playButton.setImageResource(R.drawable.pause)
             }
         }
+        val optionTestButton = view.findViewById<ImageView>(R.id.option_test_button)
 
+        optionTestButton.setOnClickListener {
+            val popup = PopupMenu(requireContext(), optionTestButton)
+            popup.menuInflater.inflate(R.menu.course_content_test_option, popup.menu)
+
+            popup.setOnMenuItemClickListener { item ->
+                when(item.itemId) {
+                    R.id.optionEditTest -> {
+                        Toast.makeText(requireContext(), "Edit Test clicked", Toast.LENGTH_SHORT).show()
+                        showEditTestDialog(courseCode!!, testTitleView.text.toString())
+                        true
+                    }
+                    R.id.optionAddTest -> {
+                        Toast.makeText(requireContext(), "Add Test clicked", Toast.LENGTH_SHORT).show()
+                        showAddTestDialog()
+                        true
+                    }
+                    R.id.optionRemoveTest -> {
+                        Toast.makeText(requireContext(), "Remove Test clicked", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            popup.show()
+
+        }
 
         val editCourseCard = view.findViewById<androidx.cardview.widget.CardView>(R.id.editCourseCard)
 
         editCourseCard.setOnClickListener {
             showEditCourseDialog()   // the function you already have for editing/deleting
+        }
+        topicMoreButton = view.findViewById(R.id.topicMoreButton)
+
+        topicMoreButton.setOnClickListener {
+            showTopicOptionsMenu(it)
         }
 
 
@@ -233,6 +267,282 @@ class CourseContentFragment : Fragment() {
         chronometer.start()
         timerStarted = true
         playButton.setImageResource(R.drawable.pause)
+    }
+    private fun showAddTestDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.add_test_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_test_name)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_add_test)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel_test)
+
+        val dialog = builder.setView(dialogView).create()
+
+        confirmButton.setOnClickListener {
+            val testName = nameInput.text.toString().trim()
+
+            if (testName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter test name", Toast.LENGTH_SHORT).show()
+            } else {
+                FirebaseService.createTest(courseCode!!, testName)
+                Toast.makeText(requireContext(), "Test created", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun showEditTestDialog(courseCode: String, testName: String) {
+
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.edit_test_option, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_test_name)
+        val gradeInput = dialogView.findViewById<EditText>(R.id.edit_test_grade)
+        val topicsContainer = dialogView.findViewById<LinearLayout>(R.id.topics_list_layout)
+
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_confirm_edit_test)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel_edit_test)
+
+        // Pre-fill existing name
+        nameInput.setText("Enter new test name")
+
+        val dialog = builder.setView(dialogView).create()
+
+        // Load topics dynamically
+        FirebaseService.getTopics(courseCode) { topics ->
+            topicsContainer.removeAllViews()
+
+            for (topic in topics) {
+                val checkbox = CheckBox(requireContext())
+                checkbox.text = topic
+                checkbox.isChecked = false
+                topicsContainer.addView(checkbox)
+            }
+        }
+
+        confirmButton.setOnClickListener {
+            val newName = nameInput.text.toString().trim()
+            val gradeText = gradeInput.text.toString().trim()
+
+            if (newName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter new test name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val grade = gradeText.toDoubleOrNull()
+            if (grade == null) {
+                Toast.makeText(requireContext(), "Enter valid grade", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Collect selected topics
+            val selectedTopics = mutableListOf<String>()
+            for (i in 0 until topicsContainer.childCount) {
+                val checkBox = topicsContainer.getChildAt(i) as CheckBox
+                if (checkBox.isChecked) {
+                    selectedTopics.add(checkBox.text.toString())
+                }
+            }
+
+            // Update test name
+            FirebaseService.updateTest(courseCode, testName, newName)
+
+            // Update grade
+            FirebaseService.setGrade(courseCode, newName, grade)
+
+            // Add selected topics
+            for (topic in selectedTopics) {
+                FirebaseService.addTopic(courseCode, newName, topic)
+            }
+
+            Toast.makeText(requireContext(), "Test updated", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+
+    private fun showTopicOptionsMenu(anchor: View) {
+        val popup = android.widget.PopupMenu(requireContext(), anchor)
+        popup.menuInflater.inflate(R.menu.course_content_test_option, popup.menu)
+
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.optionAddTest -> {
+                    showAddTopicDialog()
+                    true
+                }
+                R.id.optionEditTest -> {
+                    showEditTopicDialog()
+                    true
+                }
+                R.id.optionRemoveTest-> {
+                    showRemoveTopicDialog()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+    }
+
+    private fun showAddTopicDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.add_topic_dialog, null)  // create this layout
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_topic_name)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_add_topic)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+
+        val dialog = builder.setView(dialogView).create()
+
+        confirmButton.setOnClickListener {
+            val newTopicName = nameInput.text.toString().trim()
+
+            if (newTopicName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter topic name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val code = courseCode ?: run {
+                Toast.makeText(requireContext(), "Course code missing", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Create topic in DB
+            FirebaseService.createTopic(code, newTopicName)
+
+            // Make this the active topic
+            topicName = newTopicName
+            topicNameView.text = newTopicName
+
+            // Reset stats for this new topic
+            courseTime = 0L
+            sessionCount = 0
+            sessionCountView.text = "0"
+            updateStudyTimeLabel(0L)
+
+            Toast.makeText(requireContext(), "Topic created", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun showEditTopicDialog() {
+        val code = courseCode ?: run {
+            Toast.makeText(requireContext(), "Course code missing", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val oldTopicName = topicName ?: run {
+            Toast.makeText(requireContext(), "No topic selected to rename", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.edit_topic_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_topic_name)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_confirm_edit_topic)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel_edit_topic)
+
+        // Pre-fill current topic name
+        nameInput.setText(oldTopicName)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        confirmButton.setOnClickListener {
+            val newTopicName = nameInput.text.toString().trim()
+
+            if (newTopicName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter a topic name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (newTopicName == oldTopicName) {
+                dialog.dismiss()
+                return@setOnClickListener
+            }
+            FirebaseService.updateTopic(code, oldTopicName, newTopicName)
+
+            topicName = newTopicName
+            topicNameView.text = newTopicName
+
+            // Optionally reload stats for this renamed topic
+            loadStudyStatsForTechnique(newTopicName, currentTechniqueIndex)
+
+            Toast.makeText(requireContext(), "Topic renamed", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+    private fun showRemoveTopicDialog() {
+        val code = courseCode ?: run {
+            Toast.makeText(requireContext(), "Course code missing", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val currentTopic = topicName ?: run {
+            Toast.makeText(requireContext(), "No topic selected to delete", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete topic")
+            .setMessage("Are you sure you want to delete \"$currentTopic\"? All study stats for this topic will be removed.")
+            .setPositiveButton("Delete") { _, _ ->
+
+                // 1) Stop timer if running
+                if (timerStarted) {
+                    chronometer.stop()
+                    timerStarted = false
+                    playButton.setImageResource(R.drawable.outline_arrow_right_24)
+                }
+
+                // 2) Reset local stats + UI
+                courseTime = 0L
+                sessionCount = 0
+                sessionCountView.text = "0"
+                updateStudyTimeLabel(0L)
+
+                topicName = null
+                topicNameView.text = "Topic"
+
+                //Delete from Firebase
+                FirebaseService.deleteTopic(code, currentTopic)
+
+                Toast.makeText(requireContext(), "Topic deleted", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
 
@@ -305,14 +615,13 @@ class CourseContentFragment : Fragment() {
             .show()
     }
 
-    // In CourseContentFragment
+
     override fun onPause(){
         super.onPause()
 
         // Check if the timer is running and the start time is saved
         val running = prefs.getBoolean("timer_running", false)
         if (running) {
-            // Calculate the elapsed time *up to this moment* (when the app is backgrounded)
             val now = SystemClock.elapsedRealtime()
             val startRealtime = prefs.getLong("timer_start_realtime", 0L)
             val elapsedSessionMs = now - startRealtime
@@ -320,25 +629,20 @@ class CourseContentFragment : Fragment() {
             // Add the elapsed time to courseTime and then save it
             courseTime += elapsedSessionMs
 
-            // Update the start time to now so the next time it restores, it counts from here (optional,
-            // but helps keep the persistent state clean if you resume the chronometer later)
+
             prefs.edit()
                 .putLong("timer_start_realtime", now)
                 .apply()
 
-            // The chronometer on screen is stopped by the OS, but we need to stop its counting mechanism
-            // by resetting its base and stopping it explicitly to prevent issues if it was still active
+
             chronometer.stop()
             chronometer.base = now
 
-            // Note: We don't change timerStarted state yet, as the user didn't explicitly pause it.
-            // It's still logically "running" but paused in its calculation.
+
         }
 
-        // Now save the updated total time
         saveStudyStatsForTechnique()
         // Update Firebase with the total time
-        // Note: Use a reliable method for courseCode check
         courseCode?.let { code ->
             FirebaseService.updateTime(code, courseTime / 3600000, "Fundamentals", 0)
             FirebaseService.updateDayStudyTime(code, courseTime / 3600000)
@@ -346,29 +650,7 @@ class CourseContentFragment : Fragment() {
     }
 
     private fun fetchTestSummary(testName: String) {
-        //wrong ai broo
-        /*db.collection("courses").document(code)
-            .collection("tests")
-            .limit(1)
-            .get()
-            .addOnSuccessListener { snap ->
-                if (snap.isEmpty) {
-                    testTitleView.text = "No tests yet"
-                    testTopicsView.text = ""
-                    return@addOnSuccessListener
-                }
 
-                val doc = snap.documents.first()
-                val name = doc.getString("name") ?: "Test"
-                val topics = (doc.get("topics") as? List<*>)?.joinToString(", ") ?: "—"
-
-                testTitleView.text = name
-                testTopicsView.text = "Includes $topics"
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed to load tests", Toast.LENGTH_SHORT).show()
-            }
-            */
         FirebaseService.getTestTopics(courseCode!!, testName){ topics ->
             if(topics.isEmpty()){
                 testTitleView.text = "No tests yet"
@@ -412,39 +694,23 @@ class CourseContentFragment : Fragment() {
         chronometer.stop()
 
         val now = SystemClock.elapsedRealtime()
-        // This calculates the session time *since the chronometer's base was last set*
         val session = now - chronometer.base
 
-        // Add to total study time
         courseTime += session
 
-        // Reset persistent running flag and start time
         prefs.edit()
             .putBoolean("timer_running", false)
             .remove("timer_start_realtime") // Remove the start time
             .apply()
 
-        // Reset chronometer display to 0:00
         chronometer.base = now
 
         return session
     }
 
     private fun saveStudyStatsForTechnique() {
-        val technique = currentTechnique //TECHNIQUE IS EXPECTED AS INT IN FUNCTION, CHANGE IT!!!!
+        val technique = currentTechniqueIndex
 
-        /*
-        val data = hashMapOf<String, Any>(
-            "totalStudyMs" to courseTime, //CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
-            "sessionCount" to sessionCount
-        )
-        database is not correct
-        db.collection("courses")
-            .document(code)
-            .collection("techniques")
-            .document(technique)
-            .set(data, SetOptions.merge())
-        */
         FirebaseService.updateTopicTime(courseCode!!, courseTime.toDouble(), topicName!!, technique)
         FirebaseService.updateSession(courseCode!!, topicName!!, sessionCount)
     }
@@ -465,35 +731,6 @@ class CourseContentFragment : Fragment() {
     private fun loadStudyStatsForTechnique(topic: String, technique: Int) {
         // Change loadStudyStatsForTechnique to a listener
 
-        /*db.collection("courses")
-            .document(code)
-            .collection("techniques")
-            .document(technique)
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    // Handle error
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    val totalMs = snapshot.getLong("totalStudyMs") ?: 0L
-                    val sessions = snapshot.getLong("sessionCount") ?: 0L
-
-                    // Only update local state if this is the currently selected technique
-                    if (technique == currentTechnique) {
-                        courseTime = totalMs
-                        sessionCount = sessions.toInt()
-
-                        sessionCountView.text = sessionCount.toString()
-                        updateStudyTimeLabel(totalMs)
-
-                        // reset live session timer display
-                        chronometer.base = SystemClock.elapsedRealtime()
-                        chronometer.stop()
-                    }
-                }
-            }
-            */
         FirebaseService.getCourseTimeByTechnique(courseCode!!, topic, technique){ time ->
             courseTime = time.toLong()//CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
             FirebaseService.getSessions(courseCode!!, topic){ sessions ->
@@ -503,26 +740,7 @@ class CourseContentFragment : Fragment() {
     }
 
     private fun fetchAllTechniqueStats(technique: Int) {
-        /*db.collection("courses")
-            .document(code)
-            .collection("techniques")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                allTechniqueStats.clear()
-                for (document in snapshot.documents) {
-                    val technique = document.id
-                    val totalMs = document.getLong("totalStudyMs") ?: 0L
-                    val sessions = document.getLong("sessionCount")?.toInt() ?: 0
 
-                    allTechniqueStats[technique] = Pair(totalMs, sessions)
-                }
-
-                updateStatsForCurrentTechnique()
-            }
-            .addOnFailureListener {
-                // Handle error
-            }
-         */
         //TIME IS STORED IN HOURS NOT MS!!!!!!!!
         FirebaseService.getCourseTimeByTechnique(courseCode!!, topicName!!, technique){ time ->
 
@@ -534,20 +752,20 @@ class CourseContentFragment : Fragment() {
     }
 
 
-    private fun updateStatsForCurrentTechnique() {
-        //TIME IS STORED IN HOURS NOT MS!!!!!!!!
-        val (totalMs, sessions) = allTechniqueStats[currentTechnique] ?: Pair(0L, 0)
-
-        courseTime = totalMs //CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
-        sessionCount = sessions
-
-        sessionCountView.text = sessionCount.toString()
-        updateStudyTimeLabel(totalMs)
-
-        // reset live session timer display
-        chronometer.base = SystemClock.elapsedRealtime()
-        chronometer.stop()
-    }
+//    private fun updateStatsForCurrentTechnique() {
+//        //TIME IS STORED IN HOURS NOT MS!!!!!!!!
+//        val (totalMs, sessions) = allTechniqueStats[currentTechniqueIndex] ?: Pair(0L, 0)
+//
+//        courseTime = totalMs //CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
+//        sessionCount = sessions
+//
+//        sessionCountView.text = sessionCount.toString()
+//        updateStudyTimeLabel(totalMs)
+//
+//        // reset live session timer display
+//        chronometer.base = SystemClock.elapsedRealtime()
+//        chronometer.stop()
+//    }
 
 
 }
