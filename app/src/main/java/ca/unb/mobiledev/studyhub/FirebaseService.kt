@@ -301,11 +301,17 @@ object FirebaseService {
             }
     }
 
-    fun updateCourse(name: String){
+    fun updateCourse(courseCode: String, newName: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses")
-        val userData = mapOf(name to name)
-        ref.updateChildren(userData)
+        ref.child(courseCode).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val courseData = snapshot.value
+                ref.child(newName).setValue(courseData).addOnSuccessListener {
+                    ref.child(courseCode).removeValue()
+                }
+            }
+        }
     }
 
     fun updateCourseName(courseCode: String, newName: String){
