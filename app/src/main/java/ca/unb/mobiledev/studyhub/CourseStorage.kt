@@ -1,18 +1,21 @@
 package ca.unb.mobiledev.studyhub
 
 import android.content.Context
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import java.io.*
 
 object CourseStorage {
-    private val FILE_NAME = "courses.txt"
 
-    fun saveCourses(context: Context, courses: List<Course>) {
+    private fun getFileName(userId: String): String {
+        return if (userId == "guest") {
+            "courses_guest.txt"
+        } else {
+            "courses_${userId}.txt"
+        }
+    }
+
+    fun saveCourses(context: Context, userId: String, courses: List<Course>) {
         try {
-            val file = File(context.filesDir, FILE_NAME)
+            val file = File(context.filesDir, getFileName(userId))
             ObjectOutputStream(FileOutputStream(file)).use { oos ->
                 oos.writeObject(courses)
             }
@@ -20,12 +23,13 @@ object CourseStorage {
             e.printStackTrace()
         }
     }
-    fun clearCourses(context: Context) {
-        saveCourses(context, mutableListOf())
+
+    fun clearCourses(context: Context, userId: String) {
+        saveCourses(context, userId, emptyList())
     }
 
-    fun loadCourses(context: Context): MutableList<Course> {
-        val file = File(context.filesDir, FILE_NAME)
+    fun loadCourses(context: Context, userId: String): MutableList<Course> {
+        val file = File(context.filesDir, getFileName(userId))
         if (!file.exists()) return mutableListOf()
 
         return try {

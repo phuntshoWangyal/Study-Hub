@@ -36,6 +36,7 @@ class CourseContentFragment : Fragment() {
     private lateinit var playButton: ImageView
     private lateinit var editCourseButton: ImageView
     private lateinit var chronometer: Chronometer
+    private lateinit var noTopicMessage: TextView
 
     private lateinit var techniqueSpinner: Spinner
 
@@ -58,8 +59,12 @@ class CourseContentFragment : Fragment() {
     private var allTechniqueStats = mutableMapOf<String, Pair<Long, Int>>()
     private var currentTechniqueIndex: Int = 0
     private var timerStarted: Boolean = false
+    private var lastSavedHoursForTopic: Double = 0.0
 
     private var timerBase: Long = 0L
+    private val topics: MutableList<String> = mutableListOf()
+    private var currentTopicIndexInList: Int = -1
+
 
     private val prefs by lazy {
         requireContext().getSharedPreferences("timer_pref", Context.MODE_PRIVATE)
@@ -98,6 +103,8 @@ class CourseContentFragment : Fragment() {
         rightArrow     = view.findViewById(R.id.rightArrow)
         playButton     = view.findViewById(R.id.playButton)
         chronometer    = view.findViewById(R.id.chronometer)
+        noTopicMessage = view.findViewById(R.id.noTopicMessage)
+
         restoreTimerState()
         sessionCountView = view.findViewById(R.id.sessionCount)
         sessionCountView.text = sessionCount.toString()
@@ -166,20 +173,84 @@ class CourseContentFragment : Fragment() {
 
 
         courseCodeView.text = courseCode ?: "Course Code"
-        topicNameView.text = courseName ?: "Topic name"
+        topicNameView.text = "No topics yet"
         studyTimeView.text = "00:00:00"
+        sessionCountView.text = "0"
+
+        showNoTopicState()
+
 
         if (!courseCode.isNullOrEmpty()) {
-            loadStudyStatsForTechnique(courseCode!!, currentTechniqueIndex)
+            FirebaseService.getTopics(courseCode!!) { topicList ->
+                topics.clear()
+                topics.addAll(topicList)
+
+                if (topics.isEmpty()) {
+                    showNoTopicState()
+                    currentTopicIndexInList = -1
+                } else {
+                    // Start with the first topic
+                    currentTopicIndexInList = 0
+                    topicName = topics[currentTopicIndexInList]
+                    topicNameView.text = topicName
+
+                    // Load stats for this topic + current technique
+                    loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
+                }
+            }
         }
+
 
 
         leftArrow.setOnClickListener {
-            Toast.makeText(requireContext(), "Left arrow clicked", Toast.LENGTH_SHORT).show()
+            // No topics at all
+            if (topics.isEmpty()) {
+                Toast.makeText(requireContext(), "Add a topic first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Only one topic
+            if (topics.size == 1) {
+                Toast.makeText(requireContext(), "Only one topic", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Already at first topic
+            if (currentTopicIndexInList <= 0) {
+                Toast.makeText(requireContext(), "No previous topic", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Save current topic’s stats before switching
+            saveStudyStatsForTechnique()
+
+            currentTopicIndexInList--
+            switchToTopic(currentTopicIndexInList)
         }
+
         rightArrow.setOnClickListener {
-            Toast.makeText(requireContext(), "Right arrow clicked", Toast.LENGTH_SHORT).show()
+            if (topics.isEmpty()) {
+                Toast.makeText(requireContext(), "Add a topic first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (topics.size == 1) {
+                Toast.makeText(requireContext(), "Only one topic", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (currentTopicIndexInList >= topics.size - 1) {
+                Toast.makeText(requireContext(), "No next topic", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            saveStudyStatsForTechnique()
+
+            currentTopicIndexInList++
+            switchToTopic(currentTopicIndexInList)
         }
+
+
         playButton.setOnClickListener {
             if (topicName == null) {
                 Toast.makeText(requireContext(), "Create or select a topic first", Toast.LENGTH_SHORT).show()
@@ -425,22 +496,22 @@ class CourseContentFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // Create topic in DB
+            // 1) Create topic in DB
             FirebaseService.createTopic(code, newTopicName)
 
-            // Make this the active topic
-            topicName = newTopicName
-            topicNameView.text = newTopicName
+            // 2) Update local topic list so arrows see it
+            if (!topics.contains(newTopicName)) {
+                topics.add(newTopicName)
+            }
+            currentTopicIndexInList = topics.indexOf(newTopicName)
 
-            // Reset stats for this new topic
-            courseTime = 0L
-            sessionCount = 0
-            sessionCountView.text = "0"
-            updateStudyTimeLabel(0L)
+            switchToTopic(currentTopicIndexInList)
+
 
             Toast.makeText(requireContext(), "Topic created", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
+
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
@@ -488,6 +559,11 @@ class CourseContentFragment : Fragment() {
             }
             FirebaseService.updateTopic(code, oldTopicName, newTopicName)
 
+            val idx = topics.indexOf(oldTopicName)
+            if (idx != -1) {
+                topics[idx] = newTopicName
+                currentTopicIndexInList = idx
+            }
             topicName = newTopicName
             topicNameView.text = newTopicName
 
@@ -527,16 +603,32 @@ class CourseContentFragment : Fragment() {
                     playButton.setImageResource(R.drawable.outline_arrow_right_24)
                 }
 
-                // 2) Reset local stats + UI
+                // 2) Reset local stats
                 courseTime = 0L
                 sessionCount = 0
                 sessionCountView.text = "0"
                 updateStudyTimeLabel(0L)
 
-                topicName = null
-                topicNameView.text = "Topic"
+                // 3) Remove from local list
+                val removedIndex = topics.indexOf(currentTopic)
+                if (removedIndex != -1) {
+                    topics.removeAt(removedIndex)
+                }
 
-                //Delete from Firebase
+                if (topics.isEmpty()) {
+                    // no topics left
+                    currentTopicIndexInList = -1
+                    showNoTopicState()
+                } else {
+                    // move to a valid neighbour topic
+                    currentTopicIndexInList = if (removedIndex >= topics.size) {
+                        topics.size - 1
+                    } else {
+                        removedIndex
+                    }
+                    switchToTopic(currentTopicIndexInList)
+                }
+
                 FirebaseService.deleteTopic(code, currentTopic)
 
                 Toast.makeText(requireContext(), "Topic deleted", Toast.LENGTH_SHORT).show()
@@ -614,40 +706,67 @@ class CourseContentFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
+    private fun showNoTopicState() {
+        topicName = null
+
+        topicNameView.text = "No topics yet"
+        studyTimeView.text = "00:00:00"
+        sessionCount = 0
+        sessionCountView.text = "0"
 
 
-    override fun onPause(){
+    }
+
+
+
+
+    override fun onPause() {
         super.onPause()
 
-        // Check if the timer is running and the start time is saved
         val running = prefs.getBoolean("timer_running", false)
         if (running) {
             val now = SystemClock.elapsedRealtime()
             val startRealtime = prefs.getLong("timer_start_realtime", 0L)
             val elapsedSessionMs = now - startRealtime
 
-            // Add the elapsed time to courseTime and then save it
+            // add current running session to local ms
             courseTime += elapsedSessionMs
 
-
+            // update stored start time so if you ever resumed you'd be consistent
             prefs.edit()
                 .putLong("timer_start_realtime", now)
                 .apply()
 
-
             chronometer.stop()
             chronometer.base = now
-
-
         }
 
-        saveStudyStatsForTechnique()
-        // Update Firebase with the total time
-        courseCode?.let { code ->
-            FirebaseService.updateTime(code, courseTime / 3600000, "Fundamentals", 0)
-            FirebaseService.updateDayStudyTime(code, courseTime / 3600000)
+        val code = courseCode
+        val topic = topicName
+        if (code != null && topic != null) {
+            // 1) update sessions count for this topic
+            saveStudyStatsForTechnique()
+
+            // 2) convert total ms for THIS topic+technique to HOURS (Double)
+            val totalHours = courseTime.toDouble() / 3_600_000.0
+
+            // 3) compute how many hours are NEW since last time we wrote to DB
+            val deltaHours = totalHours - lastSavedHoursForTopic
+
+            if (deltaHours > 0.0) {
+                // per-topic-per-technique time in HOURS (Double)
+                FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
+
+                // per-day stats: API takes Long, so we drop the fraction
+                FirebaseService.updateDayStudyTime(code, deltaHours.toLong())
+
+                // remember we've synced up to totalHours
+                lastSavedHoursForTopic = totalHours
+            }
         }
     }
+
+
 
     private fun fetchTestSummary(testName: String) {
 
@@ -707,13 +826,33 @@ class CourseContentFragment : Fragment() {
 
         return session
     }
+    private fun switchToTopic(index: Int) {
+        if (index < 0 || index >= topics.size) return
+
+        topicName = topics[index]
+        topicNameView.text = topicName
+
+        courseTime = 0L
+        sessionCount = 0
+        sessionCountView.text = "0"
+        updateStudyTimeLabel(0L)
+        lastSavedHoursForTopic = 0.0
+
+        loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
+    }
+
+
+
 
     private fun saveStudyStatsForTechnique() {
-        val technique = currentTechniqueIndex
+        val code = courseCode ?: return
+        val topic = topicName ?: return
 
-        FirebaseService.updateTopicTime(courseCode!!, courseTime.toDouble(), topicName!!, technique)
-        FirebaseService.updateSession(courseCode!!, topicName!!, sessionCount)
+        // Only sessions are managed here.
+        // Time for the topic+technique is handled by FirebaseService.updateTime()
+        FirebaseService.updateSession(code, topic, sessionCount)
     }
+
 
 
     private fun dp(v: Int): Int = (resources.displayMetrics.density * v).toInt()
@@ -729,15 +868,25 @@ class CourseContentFragment : Fragment() {
         }
     }
     private fun loadStudyStatsForTechnique(topic: String, technique: Int) {
-        // Change loadStudyStatsForTechnique to a listener
+        val code = courseCode ?: return
 
-        FirebaseService.getCourseTimeByTechnique(courseCode!!, topic, technique){ time ->
-            courseTime = time.toLong()//CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
-            FirebaseService.getSessions(courseCode!!, topic){ sessions ->
+        FirebaseService.getCourseTimeByTechnique(code, topic, technique) { timeHours ->
+            // timeHours is stored in HOURS in the DB
+            lastSavedHoursForTopic = timeHours
+
+
+            // Convert hours -> milliseconds for local use
+            val totalMs = (timeHours * 3600000.0).toLong()
+            courseTime = totalMs
+            updateStudyTimeLabel(totalMs)
+
+            FirebaseService.getSessions(code, topic) { sessions ->
                 sessionCount = sessions
+                sessionCountView.text = sessions.toString()
             }
         }
     }
+
 
     private fun fetchAllTechniqueStats(technique: Int) {
 
@@ -750,22 +899,5 @@ class CourseContentFragment : Fragment() {
             }
         }
     }
-
-
-//    private fun updateStatsForCurrentTechnique() {
-//        //TIME IS STORED IN HOURS NOT MS!!!!!!!!
-//        val (totalMs, sessions) = allTechniqueStats[currentTechniqueIndex] ?: Pair(0L, 0)
-//
-//        courseTime = totalMs //CHANGE courseTime TO HOURS NOT MS!!!!!!!!!
-//        sessionCount = sessions
-//
-//        sessionCountView.text = sessionCount.toString()
-//        updateStudyTimeLabel(totalMs)
-//
-//        // reset live session timer display
-//        chronometer.base = SystemClock.elapsedRealtime()
-//        chronometer.stop()
-//    }
-
 
 }

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
+
     <TextView
         android:id="@+id/courseContentCode"
         android:layout_width="match_parent"
@@ -14,76 +13,67 @@
         android:textAlignment="center"
         android:textColor="@color/red"
         android:layout_margin="25dp"
-        android:fontFamily="@font/poppins_bold"
+        android:fontFamily="@font/poppins_bold" />
 
-        >
-    </TextView>
+    <!-- Edit course card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/editCourseCard"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
-        app:cardCornerRadius="30dp"
         android:backgroundTint="@color/light_pink"
-        android:id="@+id/editCourseCard"
-        >
+        app:cardCornerRadius="30dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_margin="10dp"
-
-            >
+            android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/edit_icon"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:id="@+id/edit_icon"
-                android:src="@drawable/edit_icon"
+                android:src="@drawable/edit_icon" />
 
-                >
-            </ImageView>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Edit Course"
                 android:fontFamily="@font/poppins"
                 android:paddingTop="5dp"
-                android:layout_weight="1"
+                android:layout_weight="1" />
 
-                >
-            </TextView>
             <ImageView
+                android:id="@+id/editcourse_button"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/ic_arrow_right"
-                android:id="@+id/editcourse_button"
-                >
-            </ImageView>
-
+                android:src="@drawable/ic_arrow_right" />
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
+    <!-- Test scores card -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        app:cardCornerRadius="20dp"
         android:layout_marginStart="25dp"
         android:layout_marginEnd="25dp"
-        >
+        app:cardCornerRadius="20dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="20dp"
                 android:layout_marginTop="20dp"
-                >
+                android:layout_marginBottom="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -91,9 +81,7 @@
                     android:layout_weight="1"
                     android:textSize="18dp"
                     android:textColor="@color/red"
-                    android:paddingStart="25dp">
-
-                </TextView>
+                    android:paddingStart="25dp" />
 
                 <ImageView
                     android:id="@+id/option_test_button"
@@ -101,40 +89,38 @@
                     android:layout_height="match_parent"
                     android:layout_marginEnd="25dp"
                     android:src="@drawable/options_icon"
-                    app:tint="@color/red"></ImageView>
+                    app:tint="@color/red" />
             </LinearLayout>
+
             <TextView
+                android:id="@+id/testTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Add Test"
-                android:layout_marginStart="40dp"
-                android:id="@+id/testTitle"
-                >
-            </TextView>
+                android:layout_marginStart="40dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="30dp">
+                android:layout_marginBottom="30dp"
+                android:orientation="horizontal">
+
                 <TextView
+                    android:id="@+id/testTopics"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Include: "
                     android:layout_marginStart="40dp"
-                    android:layout_weight="1"
-                    android:id="@+id/testTopics"
-                    >
-                </TextView>
+                    android:layout_weight="1" />
+
                 <ImageView
+                    android:id="@+id/testscore_button"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@drawable/ic_arrow_right"
-                    android:id="@+id/testscore_button"
                     android:layout_marginEnd="20dp"
-                    >
-
-                </ImageView>
+                    android:src="@drawable/ic_arrow_right" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -151,13 +137,12 @@
                     android:background="@drawable/edittext_background"
                     android:inputType="numberDecimal"
                     android:textSize="16sp"
-                    android:padding="10dp"/>
+                    android:padding="10dp" />
             </LinearLayout>
         </LinearLayout>
-
-
     </androidx.cardview.widget.CardView>
 
+    <!-- Topic / stats / timer card -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -197,17 +182,50 @@
                     app:tint="@color/red" />
             </LinearLayout>
 
-            <!-- Topic name like "Quickie" -->
-            <TextView
-                android:id="@+id/topicName"
+            <!-- Topic name + left/right arrows -->
+            <LinearLayout
+                android:id="@+id/topicRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Topic name"
-                android:textAlignment="center"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/poppins_bold"
-                android:layout_marginBottom="12dp" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/leftArrow"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_left"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/topicName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Topic name"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/poppins_bold" />
+
+                <ImageView
+                    android:id="@+id/rightArrow"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:layout_marginStart="12dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/noTopicMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No topics yet. Create a topic to begin studying."
+                android:textSize="16sp"
+                android:textColor="@android:color/darker_gray"
+                android:visibility="gone"
+                android:layout_gravity="center"
+                android:padding="16dp" />
 
             <!-- Stats row: Total time | Sessions -->
             <LinearLayout
@@ -273,7 +291,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- NEW: Study technique selector in the middle -->
+            <!-- Study technique selector -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -297,7 +315,7 @@
                     android:layout_weight="1" />
             </LinearLayout>
 
-            <!-- Notes row (PDF icons + arrows) -->
+            <!-- Notes row: only PDF container now -->
             <LinearLayout
                 android:id="@+id/pdfRow"
                 android:layout_width="match_parent"
@@ -308,34 +326,18 @@
                 android:paddingEnd="40dp"
                 android:gravity="center_vertical">
 
-                <ImageView
-                    android:id="@+id/leftArrow"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/ic_arrow_left"
-                    android:layout_marginEnd="16dp" />
-
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/pdfContainer"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_weight="1"
-                    android:id="@+id/pdfContainer" />
-
-                <ImageView
-                    android:id="@+id/rightArrow"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/ic_arrow_right"
-                    android:layout_marginStart="16dp" />
+                    android:orientation="horizontal" />
             </LinearLayout>
 
-            <!-- Current session timer JUST ABOVE play button -->
+            <!-- Current session timer -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:paddingTop="16dp"
                 android:paddingBottom="4dp">
 
                 <Chronometer
@@ -345,7 +347,7 @@
                     android:textSize="20sp" />
             </LinearLayout>
 
-            <!-- Play button (start session) -->
+            <!-- Play button -->
             <ImageView
                 android:id="@+id/playButton"
                 android:layout_width="40dp"
@@ -353,11 +355,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="20dp"
                 android:src="@drawable/outline_arrow_right_24" />
-
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
-
-
 
 </LinearLayout>
