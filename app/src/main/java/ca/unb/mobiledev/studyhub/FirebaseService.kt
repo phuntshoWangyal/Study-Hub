@@ -231,16 +231,30 @@ object FirebaseService {
         ref.updateChildren(userData)
     }
 
-    fun updateTest(name: String, testName: String, newTestName: String){
+    fun updateTest(courseCode: String, testName: String, newTestName: String){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$testName")
-        ref.setValue(newTestName)
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Tests")
+        ref.child(testName).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val courseData = snapshot.value
+                ref.child(newTestName).setValue(courseData).addOnSuccessListener {
+                    ref.child(testName).removeValue()
+                }
+            }
+        }
     }
 
-    fun updateTopic(name: String, topicName: String, newTopicName: String){
+    fun updateTopic(courseCode: String, topicName: String, newTopic: String){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$topicName")
-        ref.setValue(newTopicName)
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics")
+        ref.child(topicName).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val courseData = snapshot.value
+                ref.child(newTopic).setValue(courseData).addOnSuccessListener {
+                    ref.child(topicName).removeValue()
+                }
+            }
+        }
     }
 
     fun setGrade(courseName:String, testName: String, grade: Double){
