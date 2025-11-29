@@ -121,18 +121,6 @@ object FirebaseService {
         }
     }
 
-    fun verifyEmail(){
-        val user = auth.currentUser
-        user?.sendEmailVerification()
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.i("EmailVerification", "Verification email sent.")
-                } else {
-                    Log.e("EmailVerification", "Failed to send email.")
-                }
-            }
-    }
-
     fun createCourse(code: String, name: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses")
@@ -321,8 +309,6 @@ object FirebaseService {
         ref.updateChildren(userData)
     }
 
-
-
     fun getCourseList(callback: (List<String>) -> Unit){
         val uid = auth.currentUser?.uid
         val coursesRef = FirebaseDatabase.getInstance()
@@ -435,7 +421,8 @@ object FirebaseService {
 
     fun updateTopicTime(name: String, timeAdd: Double, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic")
+        val technique1 = technique.toString()
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic/$technique1")
         ref.get().addOnSuccessListener { snapshot ->
             var time = snapshot.getValue(Double::class.java) ?: 0.0
             time += timeAdd
