@@ -384,7 +384,8 @@ object FirebaseService {
         }
 
     }
-    fun updateTime(name: String, timeAdd: Long, topic: String, technique: Int){
+
+    fun updateTime(name: String, timeAdd: Double, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$name/StudiedTime")
         ref.get().addOnSuccessListener { snapshot ->
