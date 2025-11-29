@@ -119,7 +119,7 @@
                     updateStudyTimeLabel(getCurrentAccumulatedMs())
                     // push totals to Firebase (send hours)
                     courseCode?.let { code ->
-                        val hours = getCurrentAccumulatedMs().toDouble() / 3_600_000.0
+                        val hours = getCurrentAccumulatedMs().toDouble() / 3600000
                         FirebaseService.updateTime(code, hours, "Fundamentals", 0)
                         FirebaseService.updateDayStudyTime(code, hours)
                     }
