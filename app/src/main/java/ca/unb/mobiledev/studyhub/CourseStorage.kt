@@ -1,18 +1,19 @@
 package ca.unb.mobiledev.studyhub
 
 import android.content.Context
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import com.google.firebase.auth.FirebaseAuth
+import java.io.*
 
 object CourseStorage {
-    private val FILE_NAME = "courses.txt"
+
+    private fun getFileName(): String {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        return if (uid != null) "courses_$uid.txt" else "courses_guest.txt"
+    }
 
     fun saveCourses(context: Context, courses: List<Course>) {
         try {
-            val file = File(context.filesDir, FILE_NAME)
+            val file = File(context.filesDir, getFileName())
             ObjectOutputStream(FileOutputStream(file)).use { oos ->
                 oos.writeObject(courses)
             }
@@ -20,12 +21,13 @@ object CourseStorage {
             e.printStackTrace()
         }
     }
+
     fun clearCourses(context: Context) {
-        saveCourses(context, mutableListOf())
+        saveCourses(context, emptyList())
     }
 
     fun loadCourses(context: Context): MutableList<Course> {
-        val file = File(context.filesDir, FILE_NAME)
+        val file = File(context.filesDir, getFileName())
         if (!file.exists()) return mutableListOf()
 
         return try {

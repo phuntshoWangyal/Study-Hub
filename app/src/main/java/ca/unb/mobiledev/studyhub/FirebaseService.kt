@@ -4,7 +4,10 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 
@@ -210,7 +213,7 @@ object FirebaseService {
     fun createTest(courseName: String, testName: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
-        val userData = mapOf("Grade" to null)
+        val userData = mapOf("Grade" to 0.0)
         ref.updateChildren(userData)
     }
 
@@ -226,6 +229,18 @@ object FirebaseService {
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName/Topics")
         val userData = mapOf(topicName to topicName)
         ref.updateChildren(userData)
+    }
+
+    fun updateTest(name: String, testName: String, newTestName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$testName")
+        ref.setValue(newTestName)
+    }
+
+    fun updateTopic(name: String, topicName: String, newTopicName: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$topicName")
+        ref.setValue(newTopicName)
     }
 
     fun setGrade(courseName:String, testName: String, grade: Double){
@@ -285,6 +300,8 @@ object FirebaseService {
         val userData = mapOf("CourseName" to newName)
         ref.updateChildren(userData)
     }
+
+
 
     fun getCourseList(callback: (List<String>) -> Unit){
         val uid = auth.currentUser?.uid
@@ -377,13 +394,13 @@ object FirebaseService {
             val userData = mapOf("StudiedTime" to time)
             reference.updateChildren(userData)
             updateUserTime(timeAdd)
-            updateTopicTime(name, timeAdd.toDouble(), topic, technique)
+            updateTopicTime(name, timeAdd, topic, technique)
         }.addOnFailureListener { e ->
             Log.e("Time of Course", e.toString())
         }
     }
 
-    fun updateUserTime(timeAdd: Long){
+    fun updateUserTime(timeAdd: Double){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/studyTime")
         ref.get().addOnSuccessListener { snapshot ->
@@ -397,8 +414,7 @@ object FirebaseService {
 
     fun updateTopicTime(name: String, timeAdd: Double, topic: String, technique: Int){
         val uid = auth.currentUser?.uid
-        val technique1 = technique.toString()
-        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic/$technique1")
+        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Topics/$topic")
         ref.get().addOnSuccessListener { snapshot ->
             var time = snapshot.getValue(Double::class.java) ?: 0.0
             time += timeAdd

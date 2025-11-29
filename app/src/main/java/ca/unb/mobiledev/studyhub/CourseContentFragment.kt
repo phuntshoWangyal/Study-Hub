@@ -3,11 +3,15 @@ package ca.unb.mobiledev.studyhub
 import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
+import android.view.*
+import android.widget.Button
+import android.widget.CheckBox
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.Chronometer
@@ -42,6 +46,7 @@ class CourseContentFragment : Fragment() {
     private lateinit var topicMoreButton: ImageView
 
 
+    private val db by lazy { FirebaseFirestore.getInstance() }
 
     private var courseCode: String? = null
     private var courseName: String? = null
@@ -49,7 +54,6 @@ class CourseContentFragment : Fragment() {
     private var topicName: String? = null
 
     private var courseTime: Long = 0L
-    private val db = FirebaseFirestore.getInstance()
 
     private lateinit var sessionCountView: TextView
     private var sessionCount: Int = 0
@@ -84,10 +88,12 @@ class CourseContentFragment : Fragment() {
         // use your existing XML layout here
         return inflater.inflate(R.layout.course_content, container, false)
     }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        var timerStarted = false
+        var hours: Int
+        var minutes: Int
+        var seconds: Int
 
         courseCodeView = view.findViewById(R.id.courseContentCode)
         testTitleView  = view.findViewById(R.id.testTitle)
@@ -100,10 +106,10 @@ class CourseContentFragment : Fragment() {
         playButton     = view.findViewById(R.id.playButton)
         chronometer    = view.findViewById(R.id.chronometer)
         restoreTimerState()
-        sessionCountView = view.findViewById(R.id.sessionCount)
+        //sessionCountView = view.findViewById(R.id.sessionCount)
         sessionCountView.text = sessionCount.toString()
 
-        techniqueSpinner = view.findViewById(R.id.techniqueSpinner)
+        //techniqueSpinner = view.findViewById(R.id.techniqueSpinner)
 
         techniques = listOf(
             "Your own Technique",
@@ -151,7 +157,7 @@ class CourseContentFragment : Fragment() {
                 // Save the stats for the technique
                 if (!courseCode.isNullOrEmpty()) {
 
-                    saveStudyStatsForTechnique()
+                    //saveStudyStatsForTechnique()
                 }
 
                 // SWITCH to the new technique
@@ -159,7 +165,7 @@ class CourseContentFragment : Fragment() {
 
 
                 if (!courseCode.isNullOrEmpty()) {
-                    loadStudyStatsForTechnique(courseCode!!, currentTechnique)
+                    //loadStudyStatsForTechnique(courseCode!!, currentTechnique)
                 }
             }
 
@@ -170,12 +176,12 @@ class CourseContentFragment : Fragment() {
 
         courseCodeView.text = courseCode ?: "Course Code"
         topicNameView.text = courseName ?: "Topic name"
-        studyTimeView.text = "00:00:00"
+        studyTimeView.text = "Session Study Time: 00:00:00"
 
         if (!courseCode.isNullOrEmpty()) {
-            loadStudyStatsForTechnique(courseCode!!, currentTechnique)
+            //fetchNotes(courseCode!!)
+            //fetchTestSummary(courseCode!!)
         }
-
 
         leftArrow.setOnClickListener {
             Toast.makeText(requireContext(), "Left arrow clicked", Toast.LENGTH_SHORT).show()
@@ -194,9 +200,18 @@ class CourseContentFragment : Fragment() {
 
                 saveStudyStatsForTechnique()
 
+            if (timerStarted) {
+                courseTime += chronometerStop()
+                hours = (courseTime / 3600000).toInt()
+                minutes = ((courseTime - hours*3600000) / 60000).toInt()
+                seconds = ((courseTime - hours*3600000 - minutes*60000) / 1000).toInt()
+
+                studyTimeView.text = "Session Study Time: %02d:%02d:%02d".format(hours, minutes, seconds)
+
                 timerStarted = false
                 playButton.setImageResource(R.drawable.outline_arrow_right_24)
-            } else {
+            }
+            else{
                 chronometerStart()
                 timerStarted = true
                 playButton.setImageResource(R.drawable.pause)
@@ -209,6 +224,144 @@ class CourseContentFragment : Fragment() {
         editCourseCard.setOnClickListener {
             showEditCourseDialog()   // the function you already have for editing/deleting
         }
+        val optionTestButton = view.findViewById<ImageView>(R.id.option_test_button)
+
+        optionTestButton.setOnClickListener {
+            val popup = PopupMenu(requireContext(), optionTestButton)
+            popup.menuInflater.inflate(R.menu.course_content_test_option, popup.menu)
+
+            popup.setOnMenuItemClickListener { item ->
+                when(item.itemId) {
+                    R.id.optionEditTest -> {
+                        Toast.makeText(requireContext(), "Edit Test clicked", Toast.LENGTH_SHORT).show()
+                        showEditTestDialog(courseCode!!, testTitleView.text.toString())
+                        true
+                    }
+                    R.id.optionAddTest -> {
+                        Toast.makeText(requireContext(), "Add Test clicked", Toast.LENGTH_SHORT).show()
+                        showAddTestDialog()
+                        true
+                    }
+                    R.id.optionRemoveTest -> {
+                        Toast.makeText(requireContext(), "Remove Test clicked", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            popup.show()
+        }
+
+    }
+
+    private fun showEditTestDialog(courseCode: String, testName: String) {
+
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.edit_test_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_test_name)
+        val gradeInput = dialogView.findViewById<EditText>(R.id.edit_test_grade)
+        val topicsContainer = dialogView.findViewById<LinearLayout>(R.id.layout_topics_list)
+
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_save_edit_test)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel_edit_test)
+
+        // Pre-fill existing name
+        nameInput.setText(testName)
+
+        val dialog = builder.setView(dialogView).create()
+
+        // Load topics dynamically
+        FirebaseService.getTopics(courseCode) { topics ->
+            topicsContainer.removeAllViews()
+
+            for (topic in topics) {
+                val checkbox = CheckBox(requireContext())
+                checkbox.text = topic
+                checkbox.isChecked = false
+                topicsContainer.addView(checkbox)
+            }
+        }
+
+        confirmButton.setOnClickListener {
+            val newName = nameInput.text.toString().trim()
+            val gradeText = gradeInput.text.toString().trim()
+
+            if (newName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter new test name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val grade = gradeText.toDoubleOrNull()
+            if (grade == null) {
+                Toast.makeText(requireContext(), "Enter valid grade", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Collect selected topics
+            val selectedTopics = mutableListOf<String>()
+            for (i in 0 until topicsContainer.childCount) {
+                val checkBox = topicsContainer.getChildAt(i) as CheckBox
+                if (checkBox.isChecked) {
+                    selectedTopics.add(checkBox.text.toString())
+                }
+            }
+
+            // Update test name
+            FirebaseService.updateTest(courseCode, testName, newName)
+
+            // Update grade
+            FirebaseService.setGrade(courseCode, newName, grade)
+
+            // Add selected topics
+            for (topic in selectedTopics) {
+                FirebaseService.addTopic(courseCode, newName, topic)
+            }
+
+            Toast.makeText(requireContext(), "Test updated", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun showAddTestDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.add_test_dialog, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_test_name)
+        val confirmButton = dialogView.findViewById<Button>(R.id.btn_add_test)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+
+        val dialog = builder.setView(dialogView).create()
+
+        confirmButton.setOnClickListener {
+            val testName = nameInput.text.toString().trim()
+
+            if (testName.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter test name", Toast.LENGTH_SHORT).show()
+            } else {
+
+                FirebaseService.createTest(courseCode!!, testName)
+
+                Toast.makeText(requireContext(), "Test created", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
 
 
     }
@@ -306,7 +459,7 @@ class CourseContentFragment : Fragment() {
     }
 
     // In CourseContentFragment
-    override fun onPause(){
+    override fun onPause() {
         super.onPause()
 
         // Check if the timer is running and the start time is saved
@@ -344,31 +497,8 @@ class CourseContentFragment : Fragment() {
             FirebaseService.updateDayStudyTime(code, courseTime / 3600000)
         }
     }
+    private fun fetchNotes(code: String) { /* your original code */
 
-    private fun fetchTestSummary(testName: String) {
-        //wrong ai broo
-        /*db.collection("courses").document(code)
-            .collection("tests")
-            .limit(1)
-            .get()
-            .addOnSuccessListener { snap ->
-                if (snap.isEmpty) {
-                    testTitleView.text = "No tests yet"
-                    testTopicsView.text = ""
-                    return@addOnSuccessListener
-                }
-
-                val doc = snap.documents.first()
-                val name = doc.getString("name") ?: "Test"
-                val topics = (doc.get("topics") as? List<*>)?.joinToString(", ") ?: "—"
-
-                testTitleView.text = name
-                testTopicsView.text = "Includes $topics"
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed to load tests", Toast.LENGTH_SHORT).show()
-            }
-            */
         FirebaseService.getTestTopics(courseCode!!, testName){ topics ->
             if(topics.isEmpty()){
                 testTitleView.text = "No tests yet"
@@ -391,6 +521,7 @@ class CourseContentFragment : Fragment() {
         val secStr = String.format("%02d", seconds)
         studyTimeView.text = "$hoursStr:$minStr:$secStr"
     }
+    private fun fetchTestSummary(code: String) { /* your original code */ }
 
     private fun chronometerStart() {
         val now = SystemClock.elapsedRealtime()
@@ -428,6 +559,7 @@ class CourseContentFragment : Fragment() {
         chronometer.base = now
 
         return session
+        return (SystemClock.elapsedRealtime() - chronometer.base).toInt()
     }
 
     private fun saveStudyStatsForTechnique() {
@@ -454,12 +586,12 @@ class CourseContentFragment : Fragment() {
 
     companion object {
         fun newInstance(courseCode: String, courseName: String): CourseContentFragment {
-            val frag = CourseContentFragment()
-            frag.arguments = Bundle().apply {
-                putString("course_code", courseCode)
-                putString("course_name", courseName)
+            return CourseContentFragment().apply {
+                arguments = Bundle().apply {
+                    putString("course_code", courseCode)
+                    putString("course_name", courseName)
+                }
             }
-            return frag
         }
     }
     private fun loadStudyStatsForTechnique(topic: String, technique: Int) {
