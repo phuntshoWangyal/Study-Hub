@@ -120,6 +120,7 @@
                     // push totals to Firebase (send hours)
                     courseCode?.let { code ->
                         val hours = getCurrentAccumulatedMs().toDouble() / 3600000
+                        //Topics will need to be changed to current topic instead of fundamentals
                         FirebaseService.updateTime(code, hours, "Fundamentals", 0)
                         FirebaseService.updateDayStudyTime(code, hours)
                     }
@@ -240,7 +241,7 @@
                 // chronometer displays elapsed = elapsedRealtimeNow - base
                 chronometer.base = SystemClock.elapsedRealtime() - elapsedSessionMs
                 chronometer.start()
-
+                playButton.setImageResource(R.drawable.pause)
                 timerRunning = true
                 timerStartTsMs = startTs
             } else {
