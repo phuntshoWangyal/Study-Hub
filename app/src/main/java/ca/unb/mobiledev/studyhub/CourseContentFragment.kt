@@ -763,7 +763,6 @@ class CourseContentFragment : Fragment() {
 
             // per-day stats (your API takes Long, so fractions are dropped)
             FirebaseService.updateDayStudyTime(code, deltaHours)
-            FirebaseService.updateDayStudyTime(code, deltaHours.toLong())
 
             lastSavedHoursForTopic = totalHours
         }

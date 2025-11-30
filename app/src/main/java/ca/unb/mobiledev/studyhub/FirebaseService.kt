@@ -450,7 +450,7 @@ object FirebaseService {
         }
     }
 
-    fun updateDayStudyTime(name: String, timeAdd: Long){
+    fun updateDayStudyTime(name: String, timeAdd: Double){
         val year = getCurrentYear()
         val week = getCurrentWeek()
         val day = getCurrentDayOfWeek()
