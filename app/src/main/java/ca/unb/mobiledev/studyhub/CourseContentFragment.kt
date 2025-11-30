@@ -761,6 +761,8 @@ class CourseContentFragment : Fragment() {
         if (deltaHours > 0.0) {
             FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
 
+            // per-day stats (your API takes Long, so fractions are dropped)
+            FirebaseService.updateDayStudyTime(code, deltaHours)
             FirebaseService.updateDayStudyTime(code, deltaHours.toLong())
 
             lastSavedHoursForTopic = totalHours
