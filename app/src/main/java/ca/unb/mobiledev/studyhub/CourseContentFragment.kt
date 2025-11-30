@@ -206,6 +206,10 @@ class CourseContentFragment : Fragment() {
 
 
         leftArrow.setOnClickListener {
+            if (timerStarted) {
+                Toast.makeText(requireContext(), "Stop the timer before switching topics", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             // No topics at all
             if (topics.isEmpty()) {
                 Toast.makeText(requireContext(), "Add a topic first", Toast.LENGTH_SHORT).show()
@@ -232,6 +236,10 @@ class CourseContentFragment : Fragment() {
         }
 
         rightArrow.setOnClickListener {
+            if (timerStarted) {
+                Toast.makeText(requireContext(), "Stop the timer before switching topics", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             if (topics.isEmpty()) {
                 Toast.makeText(requireContext(), "Add a topic first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
