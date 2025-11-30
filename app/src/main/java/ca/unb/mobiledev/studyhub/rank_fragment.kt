@@ -31,6 +31,12 @@ class rank_fragment : Fragment() {
     // Charts
     private lateinit var weeklyBarChart: BarChart
     private lateinit var testChart: CombinedChart
+    private var displayedWeek = FirebaseService.getCurrentWeek().toInt()
+    private var displayedYear = FirebaseService.getCurrentYear().toInt()
+
+    private lateinit var weekRangeText: TextView
+    private lateinit var arrowLeft: ImageView
+    private lateinit var arrowRight: ImageView
 
     // Data
     private var totalPoints: Int = 0
@@ -53,6 +59,9 @@ class rank_fragment : Fragment() {
         rankProgress = view.findViewById(R.id.rankProgress)
         weeklyBarChart = view.findViewById(R.id.weeklyBarChart)
         testChart = view.findViewById(R.id.courseBarChart)
+        weekRangeText = view.findViewById(R.id.weeklyDateRange)
+        arrowLeft = view.findViewById(R.id.arrowLeft)
+        arrowRight = view.findViewById(R.id.arrowRight)
 
         // Show placeholder UI until Firebase loads
         expTotal.text = "Exp: 0"
@@ -65,7 +74,40 @@ class rank_fragment : Fragment() {
         // Load charts
         loadWeeklyChart()
         loadTestChart()
+        arrowLeft.setOnClickListener {
+            displayedWeek--
+
+            // Handle when week < 1 (previous year)
+            if (displayedWeek < 1) {
+                displayedYear--
+                val cal = java.util.Calendar.getInstance()
+                cal.set(java.util.Calendar.YEAR, displayedYear)
+                displayedWeek = cal.getActualMaximum(java.util.Calendar.WEEK_OF_YEAR)
+            }
+
+            refreshWeeklyChart()
+        }
+
+        arrowRight.setOnClickListener {
+            displayedWeek++
+
+            val cal = java.util.Calendar.getInstance()
+            cal.set(java.util.Calendar.YEAR, displayedYear)
+
+            if (displayedWeek > cal.getActualMaximum(java.util.Calendar.WEEK_OF_YEAR)) {
+                displayedWeek = 1
+                displayedYear++
+            }
+
+            refreshWeeklyChart()
+        }
+
     }
+    private fun refreshWeeklyChart() {
+        weekRangeText.text = getWeekRangeString(displayedWeek, displayedYear)
+        loadWeeklyChart()
+    }
+
 
     // -------------------------------------------------------------
     //                  EXPERIENCE + RANKING LOGIC
@@ -77,7 +119,7 @@ class rank_fragment : Fragment() {
             val totalStudyHours = totalStudyDouble
 
             // Scale EXP = 3x total study time
-            val exp = (totalStudyHours * 3).toInt()
+            val exp = (totalStudyHours * 100).toInt()
 
             activity?.runOnUiThread {
                 expTotal.text = "Exp: $exp"
@@ -94,19 +136,19 @@ class rank_fragment : Fragment() {
         rankBadge.setImageLevel(points)
 
         val nextLevelMax = when {
-            points < 30 -> 30
-            points < 75 -> 75
-            points < 135 -> 135
-            points < 225 -> 225
-            else -> 225
+            points < 300 -> 300
+            points < 750 -> 750
+            points < 1350 -> 1350
+            points < 2250 -> 2250
+            else -> 2250
         }
 
         val prevLevelMin = when {
-            points < 30 -> 0
-            points < 75 -> 30
-            points < 135 -> 75
-            points < 225 -> 135
-            else -> 225
+            points < 300 -> 0
+            points < 750 -> 300
+            points < 1350 -> 750
+            points < 2250 -> 1350
+            else -> 2250
         }
 
         val levelProgress =
@@ -117,6 +159,42 @@ class rank_fragment : Fragment() {
 
         rankProgress.progress = levelProgress.coerceIn(0, 100)
     }
+
+    private fun getCurrentWeekRange(): String {
+        val calendar = java.util.Calendar.getInstance()
+
+        // Set to the first day of the week (Sunday)
+        calendar.set(java.util.Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+        val weekStart = calendar.time
+
+        // Set to last day of the week (Saturday)
+        calendar.add(java.util.Calendar.DAY_OF_WEEK, 6)
+        val weekEnd = calendar.time
+
+        val sdf = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
+
+        return "${sdf.format(weekStart)} - ${sdf.format(weekEnd)}"
+    }
+
+    private fun getWeekRangeString(week: Int, year: Int): String {
+        val cal = java.util.Calendar.getInstance()
+        cal.clear()
+        cal.set(java.util.Calendar.WEEK_OF_YEAR, week)
+        cal.set(java.util.Calendar.YEAR, year)
+
+        // Start = Sunday
+        cal.set(java.util.Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
+        val start = cal.time
+
+        // End = Saturday
+        cal.add(java.util.Calendar.DAY_OF_WEEK, 6)
+        val end = cal.time
+
+        val sdf = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
+        return "${sdf.format(start)} - ${sdf.format(end)}"
+    }
+
+
 
     // -------------------------------------------------------------
     //                  WEEKLY BAR CHART
@@ -129,8 +207,11 @@ class rank_fragment : Fragment() {
                 return@getCourseList
             }
 
-            val year = FirebaseService.getCurrentYear()
-            val week = FirebaseService.getCurrentWeek()
+            val year = displayedYear.toString()
+            val week = displayedWeek.toString()
+
+            weekRangeText.text = getWeekRangeString(displayedWeek, displayedYear)
+
 
             val courseNames = courseList.toMutableList()
             val weeklyData = Array(courseList.size) { MutableList(7) { 0.0 } }

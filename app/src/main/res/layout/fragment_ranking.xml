@@ -101,12 +101,13 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
+                    <!-- Title Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical|center_horizontal"
-                        android:paddingBottom="8dp">
+                        android:paddingBottom="4dp">
 
                         <ImageView
                             android:id="@+id/arrowLeft"
@@ -132,15 +133,30 @@
                             android:layout_marginStart="8dp"
                             android:contentDescription="Next Week"
                             android:src="@drawable/ic_arrow_right" />
+
                     </LinearLayout>
+
+                    <!-- NEW: Date Range Text -->
+                    <TextView
+                        android:id="@+id/weeklyDateRange"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Nov 7 - Nov 14"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="8dp" />
 
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/weeklyBarChart"
                         android:layout_width="match_parent"
                         android:layout_height="400dp"
                         android:layout_marginTop="8dp" />
+
                 </LinearLayout>
+
             </androidx.cardview.widget.CardView>
+
 
 
             <androidx.cardview.widget.CardView
