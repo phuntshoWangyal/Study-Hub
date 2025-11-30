@@ -212,10 +212,18 @@ object FirebaseService {
         val userData = mapOf(topicName to topicName)
         ref.updateChildren(userData)
     }
-    fun updateTest(name: String, testName: String, newTestName: String){
+
+    fun updateTest(courseCode: String, newName: String, testName: String){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$name/Tests/$testName")
-        ref.setValue(newTestName)
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Tests/$testName")
+        ref.child(courseCode).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val courseData = snapshot.value
+                ref.child(newName).setValue(courseData).addOnSuccessListener {
+                    ref.child(courseCode).removeValue()
+                }
+            }
+        }
     }
 
     fun setGrade(courseName:String, testName: String, grade: Double){
@@ -273,11 +281,17 @@ object FirebaseService {
             }
     }
 
-    fun updateCourse(name: String){
+    fun updateCourse(courseCode: String, newName: String){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses")
-        val userData = mapOf(name to name)
-        ref.updateChildren(userData)
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode")
+        ref.child(courseCode).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val courseData = snapshot.value
+                ref.child(newName).setValue(courseData).addOnSuccessListener {
+                    ref.child(courseCode).removeValue()
+                }
+            }
+        }
     }
 
     fun updateCourseName(courseCode: String, newName: String){
@@ -392,7 +406,7 @@ object FirebaseService {
     }
     fun updateTopic(courseCode: String, topicName: String, newTopic: String){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics")
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topicName")
         ref.child(topicName).get().addOnSuccessListener { snapshot ->
             if (snapshot.exists()) {
                 val courseData = snapshot.value
