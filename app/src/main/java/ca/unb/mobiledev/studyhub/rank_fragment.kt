@@ -52,6 +52,9 @@ class rank_fragment : Fragment() {
         "Pomodoro",
         "90-minute blocks"
     )
+    private var selectedCourse: String? = null
+    private var selectedTechnique: Int = 0
+
 
 
 
@@ -95,7 +98,23 @@ class rank_fragment : Fragment() {
 
         // Load charts
         loadWeeklyChart()
-        loadTestChart()
+
+        // Load Test Chart ONLY after courses load
+        getCourseList { list ->
+            courseListMemory = list
+            if (list.isNotEmpty()) {
+
+                selectedCourse = list[0]
+                selectedTechnique = 0
+
+                courseTitle.text = selectedCourse
+                techniqueTitle.text = techniqueListMemory[selectedTechnique]
+
+                loadTestChart(selectedCourse, selectedTechnique)
+            }
+        }
+
+
         arrowLeft.setOnClickListener {
             displayedWeek--
 
@@ -124,32 +143,26 @@ class rank_fragment : Fragment() {
             refreshWeeklyChart()
         }
         dropCourse.setOnClickListener {
-            if (courseListMemory.isEmpty()) return@setOnClickListener
-
             showDropDown(dropCourse, courseListMemory) { selected ->
+                selectedCourse = selected
                 courseTitle.text = selected
 
-                // TODO: reload chart based on selected course
-                loadTestChart()
+                loadTestChart(selectedCourse, selectedTechnique)
             }
         }
+
+
 
         dropTechnique.setOnClickListener {
             showDropDown(dropTechnique, techniqueListMemory) { selected ->
+                selectedTechnique = techniqueListMemory.indexOf(selected)
                 techniqueTitle.text = selected
 
-                // TODO: filter study data by selected technique
-                loadTestChart()
+                loadTestChart(selectedCourse, selectedTechnique)
             }
         }
-        dropCourse.setOnClickListener {
-            if (courseListMemory.isEmpty()) return@setOnClickListener
 
-            showDropDown(dropCourse, courseListMemory) { selected ->
-                courseTitle.text = selected
-                loadTestChart()   // Reload chart with new course
-            }
-        }
+
 
 
     }
@@ -250,21 +263,6 @@ class rank_fragment : Fragment() {
         rankProgress.progress = levelProgress.coerceIn(0, 100)
     }
 
-    private fun getCurrentWeekRange(): String {
-        val calendar = java.util.Calendar.getInstance()
-
-        // Set to the first day of the week (Sunday)
-        calendar.set(java.util.Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
-        val weekStart = calendar.time
-
-        // Set to last day of the week (Saturday)
-        calendar.add(java.util.Calendar.DAY_OF_WEEK, 6)
-        val weekEnd = calendar.time
-
-        val sdf = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
-
-        return "${sdf.format(weekStart)} - ${sdf.format(weekEnd)}"
-    }
 
     private fun getWeekRangeString(week: Int, year: Int): String {
         val cal = java.util.Calendar.getInstance()
@@ -401,109 +399,66 @@ class rank_fragment : Fragment() {
     // -------------------------------------------------------------
     //                  TEST CHART (Bar = Study, Line = Grade)
     // -------------------------------------------------------------
-    private fun loadTestChart() {
+    private fun loadTestChart(selectedCourse: String?, selectedTechnique: Int?) {
 
-        getCourseList { courses ->
-            if (courses.isEmpty()) {
+        // ---- Guard checks ----
+        val course = selectedCourse ?: return
+        val technique = selectedTechnique ?: return
+
+        // Reset chart early to avoid showing old data
+        drawTestChart(emptyList(), emptyList(), emptyList())
+
+        getTests(course) { tests ->
+            if (tests.isEmpty()) {
                 drawTestChart(emptyList(), emptyList(), emptyList())
-                return@getCourseList
+                return@getTests
             }
 
-            val firstCourse = courses[0]
+            val testNames = ArrayList<String>()
+            val studyTotals = ArrayList<Float>()
+            val grades = ArrayList<Float>()
 
-            getTests(firstCourse) { tests ->
-                if (tests.isEmpty()) {
-                    drawTestChart(emptyList(), emptyList(), emptyList())
-                    return@getTests
-                }
+            var testsLoaded = 0
 
-                val testNames = ArrayList<String>()
-                val studyTotals = ArrayList<Float>()
-                val grades = ArrayList<Float>()
+            for (test in tests) {
+                testNames.add(test)
 
-                var testsLoaded = 0   // Count how many tests finished loading
+                getTestTopics(course, test) { topics ->
+                    if (topics.isEmpty()) {
+                        // No topics = 0 study time
+                        studyTotals.add(0f)
 
-                for (testName in tests) {
-
-                    testNames.add(testName)
-
-                    getTestTopics(firstCourse, testName) { topics ->
-
-                        if (topics.isEmpty()) {
-                            // No topics → still must push default values
-                            studyTotals.add(0f)
-                            grades.add(0f)
+                        FirebaseService.getGrade(course, test) { grade ->
+                            grades.add(grade.toFloat())
                             testsLoaded++
 
-                            if (testsLoaded == tests.size)
+                            if (testsLoaded == tests.size) {
                                 drawTestChart(testNames, studyTotals, grades)
-
-                            return@getTestTopics
+                            }
                         }
 
-                        var totalStudy = 0.0
-                        var topicsLoaded = 0
+                        return@getTestTopics
+                    }
 
-                        for (topic in topics) {
+                    var testStudyTotal = 0.0
+                    var topicsLoaded = 0
 
-                            getCourseTimeByTechnique(firstCourse, topic, 1) { time ->
+                    for (topic in topics) {
+                        getCourseTimeByTechnique(course, topic, technique) { time ->
+                            testStudyTotal += time
+                            topicsLoaded++
 
-                                totalStudy += time
-                                topicsLoaded++
+                            // All topics finished -> now load grade
+                            if (topicsLoaded == topics.size) {
 
-                                if (topicsLoaded == topics.size) {
+                                FirebaseService.getGrade(course, test) { grade ->
+                                    studyTotals.add(testStudyTotal.toFloat())
+                                    grades.add(grade.toFloat())
+                                    testsLoaded++
 
-                                    //This is not correct again, we dont use firestore
-                                    // All topics loaded: now fetch grade
-                                    /*
-                                    firestore.collection("Grades")
-                                        .document(testName)
-                                        .get()
-                                        .addOnSuccessListener { doc ->
-
-                                            val grade = (doc.getDouble("grade") ?: 0.0)
-
-                                            studyTotals.add(totalStudy.toFloat())
-                                            grades.add(grade.toFloat())
-                                            testsLoaded++
-
-                                            if (testsLoaded == tests.size)
-                                                drawTestChart(testNames, studyTotals, grades)
-                                        }
-                                        .addOnFailureListener {
-
-                                            studyTotals.add(totalStudy.toFloat())
-                                            grades.add(0f)
-                                            testsLoaded++
-
-                                            if (testsLoaded == tests.size)
-                                                drawTestChart(testNames, studyTotals, grades)
-                                        }
-                                        */
-
-
-
-                                    //Uncomment when there is a course code to pass
-                                    FirebaseService.getGrade(firstCourse, testName){ grade ->
-                                        if(grade == 0.0){
-                                            studyTotals.add(totalStudy.toFloat())
-                                            grades.add(0f)
-                                            testsLoaded++
-
-                                            if (testsLoaded == tests.size)
-                                                drawTestChart(testNames, studyTotals, grades)
-                                        }
-                                        else{
-                                            studyTotals.add(totalStudy.toFloat())
-                                                grades.add(grade.toFloat())
-                                                testsLoaded++
-
-                                                if (testsLoaded == tests.size)
-                                                    drawTestChart(testNames, studyTotals, grades)
-                                        }
+                                    if (testsLoaded == tests.size) {
+                                        drawTestChart(testNames, studyTotals, grades)
                                     }
-
-
                                 }
                             }
                         }
@@ -512,6 +467,7 @@ class rank_fragment : Fragment() {
             }
         }
     }
+
     private fun drawTestChart(
         testNames: List<String>,
         studyTotals: List<Float>,
