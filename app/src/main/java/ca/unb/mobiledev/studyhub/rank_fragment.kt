@@ -1,11 +1,15 @@
 package ca.unb.mobiledev.studyhub
 
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.ListView
+import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -38,6 +42,19 @@ class rank_fragment : Fragment() {
     private lateinit var arrowLeft: ImageView
     private lateinit var arrowRight: ImageView
 
+    private lateinit var courseTitle: TextView
+    private lateinit var techniqueTitle: TextView
+    private lateinit var dropCourse: ImageView
+    private lateinit var dropTechnique: ImageView
+    private var courseListMemory = listOf<String>()
+    private var techniqueListMemory = listOf(
+        "Freestyle",
+        "Pomodoro",
+        "90-minute blocks"
+    )
+
+
+
     // Data
     private var totalPoints: Int = 0
     private val days = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
@@ -62,6 +79,11 @@ class rank_fragment : Fragment() {
         weekRangeText = view.findViewById(R.id.weeklyDateRange)
         arrowLeft = view.findViewById(R.id.arrowLeft)
         arrowRight = view.findViewById(R.id.arrowRight)
+        courseTitle = view.findViewById(R.id.courseStatTitle)
+        techniqueTitle = view.findViewById(R.id.techniqueSelector)
+        dropCourse = view.findViewById(R.id.dropDownArrow)
+        dropTechnique = view.findViewById(R.id.dropDownTechnique)
+
 
         // Show placeholder UI until Firebase loads
         expTotal.text = "Exp: 0"
@@ -101,8 +123,76 @@ class rank_fragment : Fragment() {
 
             refreshWeeklyChart()
         }
+        dropCourse.setOnClickListener {
+            if (courseListMemory.isEmpty()) return@setOnClickListener
+
+            showDropDown(dropCourse, courseListMemory) { selected ->
+                courseTitle.text = selected
+
+                // TODO: reload chart based on selected course
+                loadTestChart()
+            }
+        }
+
+        dropTechnique.setOnClickListener {
+            showDropDown(dropTechnique, techniqueListMemory) { selected ->
+                techniqueTitle.text = selected
+
+                // TODO: filter study data by selected technique
+                loadTestChart()
+            }
+        }
+        dropCourse.setOnClickListener {
+            if (courseListMemory.isEmpty()) return@setOnClickListener
+
+            showDropDown(dropCourse, courseListMemory) { selected ->
+                courseTitle.text = selected
+                loadTestChart()   // Reload chart with new course
+            }
+        }
+
 
     }
+    // -------------------- DROPDOWNS --------------------
+    private fun showDropDown(
+        anchor: View,
+        items: List<String>,
+        onSelect: (String) -> Unit
+    ) {
+        val context = requireContext()
+
+        // Build the list view
+        val listView = ListView(context).apply {
+            adapter = ArrayAdapter(
+                context,
+                android.R.layout.simple_list_item_1,
+                items
+            )
+            dividerHeight = 1
+        }
+
+        // PopupWindow with WRAP_CONTENT
+        val popupWindow = PopupWindow(
+            listView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        listView.setOnItemClickListener { _, _, position, _ ->
+            onSelect(items[position])
+            popupWindow.dismiss()
+        }
+
+        popupWindow.elevation = 20f
+        popupWindow.setBackgroundDrawable(ColorDrawable(Color.WHITE))
+        popupWindow.isOutsideTouchable = true
+
+        // Show dropdown
+        popupWindow.showAsDropDown(anchor, 0, 10)
+    }
+
+
     private fun refreshWeeklyChart() {
         weekRangeText.text = getWeekRangeString(displayedWeek, displayedYear)
         loadWeeklyChart()
@@ -201,7 +291,7 @@ class rank_fragment : Fragment() {
     // -------------------------------------------------------------
     private fun loadWeeklyChart() {
         getCourseList { courseList ->
-
+            courseListMemory = courseList
             if (courseList.isEmpty()) {
                 drawWeeklyChart(emptyList(), emptyList())
                 return@getCourseList

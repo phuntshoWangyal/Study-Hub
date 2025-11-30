@@ -192,17 +192,17 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="6dp"
-                                android:text="Course 1"
+                                android:text="Select Course"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
 
                             <ImageView
                                 android:id="@+id/dropDownArrow"
-                                android:layout_width="24dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="24dp"
-                                android:src="@drawable/ic_arrow_down"
-                                android:contentDescription="Switch Course" />
+                                android:contentDescription="Switch Course"
+                                android:src="@drawable/ic_arrow_down" />
                         </LinearLayout>
 
                         <!-- Technique selector -->
