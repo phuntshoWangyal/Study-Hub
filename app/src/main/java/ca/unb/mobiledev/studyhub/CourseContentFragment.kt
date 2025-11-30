@@ -95,7 +95,6 @@ class CourseContentFragment : Fragment() {
 
         courseCodeView = view.findViewById(R.id.courseContentCode)
         testTitleView  = view.findViewById(R.id.testTitle)
-        testTopicsView = view.findViewById(R.id.testTopics)
         topicNameView  = view.findViewById(R.id.topicName)
         studyTimeView  = view.findViewById(R.id.studyTime)
         pdfRow         = view.findViewById(R.id.pdfRow)
@@ -104,6 +103,22 @@ class CourseContentFragment : Fragment() {
         playButton     = view.findViewById(R.id.playButton)
         chronometer    = view.findViewById(R.id.chronometer)
         noTopicMessage = view.findViewById(R.id.noTopicMessage)
+
+        val btnViewTestScores = view.findViewById<Button>(R.id.btnViewTestScores)
+
+        btnViewTestScores.setOnClickListener {
+            val code = courseCode
+            if (code == null) {
+                Toast.makeText(requireContext(),
+                    "Course code missing", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Ask the activity to open the Test Scores page
+            (activity as? MainPage)?.openTestScores(code)
+        }
+
+
 
         restoreTimerState()
         sessionCountView = view.findViewById(R.id.sessionCount)
@@ -286,35 +301,8 @@ class CourseContentFragment : Fragment() {
                 playButton.setImageResource(R.drawable.pause)
             }
         }
-        val optionTestButton = view.findViewById<ImageView>(R.id.option_test_button)
 
-        optionTestButton.setOnClickListener {
-            val popup = PopupMenu(requireContext(), optionTestButton)
-            popup.menuInflater.inflate(R.menu.course_content_test_option, popup.menu)
 
-            popup.setOnMenuItemClickListener { item ->
-                when(item.itemId) {
-                    R.id.optionEditTest -> {
-                        Toast.makeText(requireContext(), "Edit Test clicked", Toast.LENGTH_SHORT).show()
-                        showEditTestDialog(courseCode!!, testTitleView.text.toString())
-                        true
-                    }
-                    R.id.optionAddTest -> {
-                        Toast.makeText(requireContext(), "Add Test clicked", Toast.LENGTH_SHORT).show()
-                        showAddTestDialog()
-                        true
-                    }
-                    R.id.optionRemoveTest -> {
-                        Toast.makeText(requireContext(), "Remove Test clicked", Toast.LENGTH_SHORT).show()
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            popup.show()
-
-        }
 
         val editCourseCard = view.findViewById<androidx.cardview.widget.CardView>(R.id.editCourseCard)
 

@@ -210,7 +210,7 @@ object FirebaseService {
     fun createTest(courseName: String, testName: String){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")
-        val userData = mapOf("Grade" to null)
+        val userData = mapOf("Grade" to 0.0)
         ref.updateChildren(userData)
     }
 
@@ -233,6 +233,17 @@ object FirebaseService {
         ref.setValue(newTestName)
     }
 
+    fun getGrade(courseCode: String, testName: String, callback: (Double) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Tests/$testName/Grade")
+        ref.get().addOnSuccessListener { snapshot ->
+            val grade = snapshot.getValue(Double::class.java) ?: 0.0
+            callback(grade)
+        }
+            .addOnFailureListener { e ->
+                Log.e("Grade", "Grade was failed to be received")
+            }
+    }
     fun setGrade(courseName:String, testName: String, grade: Double){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")

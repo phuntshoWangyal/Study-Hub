@@ -137,4 +137,11 @@ class MainPage : AppCompatActivity(),
             homeFrag?.refreshCourseList()
         }
     }
+
+    fun openTestScores(courseCode: String) {
+        val fragment = TestScoresFragment.newInstance(courseCode)
+        loadFragment(fragment, "testScores")
+    }
+
+
 }

@@ -54,93 +54,42 @@
     </androidx.cardview.widget.CardView>
 
     <!-- Test scores card -->
+    <!-- Test scores card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/testScoresCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginStart="25dp"
-        android:layout_marginEnd="25dp"
+        android:layout_margin="16dp"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="2dp"
         app:cardCornerRadius="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="16dp"
             android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Test Scores"
-                    android:layout_weight="1"
-                    android:textSize="18dp"
-                    android:textColor="@color/red"
-                    android:paddingStart="25dp" />
-
-                <ImageView
-                    android:id="@+id/option_test_button"
-                    android:layout_width="20dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="25dp"
-                    android:src="@drawable/options_icon"
-                    app:tint="@color/red" />
-            </LinearLayout>
 
             <TextView
                 android:id="@+id/testTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Test"
-                android:layout_marginStart="40dp" />
+                android:text="Test Scores"
+                android:textStyle="bold"
+                android:textSize="16sp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/btnViewTestScores"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="30dp"
-                android:orientation="horizontal">
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/red"
+                android:text="View test scores" />
 
-                <TextView
-                    android:id="@+id/testTopics"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Include: "
-                    android:layout_marginStart="40dp"
-                    android:layout_weight="1" />
-
-                <ImageView
-                    android:id="@+id/testscore_button"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginEnd="20dp"
-                    android:src="@drawable/ic_arrow_right" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:paddingBottom="20dp">
-
-                <EditText
-                    android:id="@+id/gradeInput"
-                    android:layout_width="150dp"
-                    android:layout_height="50dp"
-                    android:hint="Enter Grade"
-                    android:gravity="center"
-                    android:background="@drawable/edittext_background"
-                    android:inputType="numberDecimal"
-                    android:textSize="16sp"
-                    android:padding="10dp" />
-            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+
 
     <!-- Topic / stats / timer card -->
     <androidx.cardview.widget.CardView
