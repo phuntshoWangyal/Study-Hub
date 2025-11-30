@@ -886,7 +886,7 @@ class CourseContentFragment : Fragment() {
             FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
 
             // per-day stats (your API takes Long, so fractions are dropped)
-            FirebaseService.updateDayStudyTime(code, deltaHours.toLong())
+            FirebaseService.updateDayStudyTime(code, deltaHours)
 
             // remember how far we've synced
             lastSavedHoursForTopic = totalHours
