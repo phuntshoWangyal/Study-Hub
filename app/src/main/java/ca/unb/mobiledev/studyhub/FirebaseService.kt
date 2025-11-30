@@ -423,15 +423,21 @@ object FirebaseService {
         }
     }
 
-    fun updateSession(courseCode: String, topic: String, sessionsToChange: Int){
+    fun updateSession(courseCode: String, topic: String, technique: Int, sessionsToChange: Int) {
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/Sessions")
+        val techStr = technique.toString()
+        val ref = realtimeDb.getReference(
+            "users/$uid/Courses/$courseCode/Topics/$topic/TechniqueSessions/$techStr"
+        )
         ref.setValue(sessionsToChange)
     }
 
-    fun getSessions(courseCode: String, topic: String, callback: (Int) -> Unit){
+    fun getSessions(courseCode: String, topic: String, technique: Int, callback: (Int) -> Unit) {
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/Sessions")
+        val techStr = technique.toString()
+        val ref = realtimeDb.getReference(
+            "users/$uid/Courses/$courseCode/Topics/$topic/TechniqueSessions/$techStr"
+        )
         ref.get().addOnSuccessListener { snapshot ->
             val sessions = snapshot.getValue(Int::class.java) ?: 0
             callback(sessions)
@@ -482,4 +488,5 @@ object FirebaseService {
         val year = sdf.format(Date())
         return year
     }
+
 }

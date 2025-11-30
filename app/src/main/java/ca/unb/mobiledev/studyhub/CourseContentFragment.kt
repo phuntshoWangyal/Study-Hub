@@ -143,32 +143,35 @@ class CourseContentFragment : Fragment() {
                         "Stop the timer before changing technique",
                         Toast.LENGTH_SHORT
                     ).show()
-
-                    // Reset spinner back to the old technique
                     techniqueSpinner.setSelection(currentTechniqueIndex)
                     return
                 }
 
-                // Do nothing if the same item is selected
                 if (position == currentTechniqueIndex) return
 
-                // Save the stats for the technique
-                if (!courseCode.isNullOrEmpty()) {
-
+                // 🔹 before switching technique, sync time for the old one
+                if (!courseCode.isNullOrEmpty() && topicName != null) {
+                    syncTimeToFirebaseIfNeeded()
                     saveStudyStatsForTechnique()
                 }
 
-                // SWITCH to the new technique
+                // 🔹 switch
                 currentTechniqueIndex = position
 
+                // 🔹 reset local counters for the new technique
+                courseTime = 0L
+                lastSavedHoursForTopic = 0.0
+                updateStudyTimeLabel(0L)
 
-                if (!courseCode.isNullOrEmpty()) {
-                    loadStudyStatsForTechnique(courseCode!!, currentTechniqueIndex)
+                // 🔹 load time for the new technique from DB
+                if (!courseCode.isNullOrEmpty() && topicName != null) {
+                    loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
 
 
 
@@ -265,6 +268,7 @@ class CourseContentFragment : Fragment() {
                 sessionCountView.text = sessionCount.toString()
 
                 saveStudyStatsForTechnique()
+                syncTimeToFirebaseIfNeeded()
 
                 timerStarted = false
                 playButton.setImageResource(R.drawable.outline_arrow_right_24)
@@ -732,39 +736,28 @@ class CourseContentFragment : Fragment() {
             // add current running session to local ms
             courseTime += elapsedSessionMs
 
-            // update stored start time so if you ever resumed you'd be consistent
+            // clear running flag
             prefs.edit()
-                .putLong("timer_start_realtime", now)
+                .putBoolean("timer_running", false)
+                .remove("timer_start_realtime")
                 .apply()
 
             chronometer.stop()
             chronometer.base = now
+            timerStarted = false
         }
 
         val code = courseCode
         val topic = topicName
         if (code != null && topic != null) {
-            // 1) update sessions count for this topic
+            // keep sessions in sync
             saveStudyStatsForTechnique()
 
-            // 2) convert total ms for THIS topic+technique to HOURS (Double)
-            val totalHours = courseTime.toDouble() / 3_600_000.0
-
-            // 3) compute how many hours are NEW since last time we wrote to DB
-            val deltaHours = totalHours - lastSavedHoursForTopic
-
-            if (deltaHours > 0.0) {
-                // per-topic-per-technique time in HOURS (Double)
-                FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
-
-                // per-day stats: API takes Long, so we drop the fraction
-                FirebaseService.updateDayStudyTime(code, deltaHours.toLong())
-
-                // remember we've synced up to totalHours
-                lastSavedHoursForTopic = totalHours
-            }
+            // and sync time (in hours) for this topic+technique
+            syncTimeToFirebaseIfNeeded()
         }
     }
+
 
 
 
@@ -815,7 +808,6 @@ class CourseContentFragment : Fragment() {
         val now = SystemClock.elapsedRealtime()
         val session = now - chronometer.base
 
-        courseTime += session
 
         prefs.edit()
             .putBoolean("timer_running", false)
@@ -848,9 +840,7 @@ class CourseContentFragment : Fragment() {
         val code = courseCode ?: return
         val topic = topicName ?: return
 
-        // Only sessions are managed here.
-        // Time for the topic+technique is handled by FirebaseService.updateTime()
-        FirebaseService.updateSession(code, topic, sessionCount)
+        FirebaseService.updateSession(code, topic, currentTechniqueIndex, sessionCount)
     }
 
 
@@ -871,16 +861,13 @@ class CourseContentFragment : Fragment() {
         val code = courseCode ?: return
 
         FirebaseService.getCourseTimeByTechnique(code, topic, technique) { timeHours ->
-            // timeHours is stored in HOURS in the DB
             lastSavedHoursForTopic = timeHours
 
-
-            // Convert hours -> milliseconds for local use
             val totalMs = (timeHours * 3600000.0).toLong()
             courseTime = totalMs
             updateStudyTimeLabel(totalMs)
 
-            FirebaseService.getSessions(code, topic) { sessions ->
+            FirebaseService.getSessions(code, topic, technique) { sessions ->
                 sessionCount = sessions
                 sessionCountView.text = sessions.toString()
             }
@@ -888,15 +875,25 @@ class CourseContentFragment : Fragment() {
     }
 
 
-    private fun fetchAllTechniqueStats(technique: Int) {
 
-        //TIME IS STORED IN HOURS NOT MS!!!!!!!!
-        FirebaseService.getCourseTimeByTechnique(courseCode!!, topicName!!, technique){ time ->
+    
+    private fun syncTimeToFirebaseIfNeeded() {
+        val code = courseCode ?: return
+        val topic = topicName ?: return
 
-            FirebaseService.getSessions(courseCode!!, topicName!!){ sessions ->
-                //SAVE TIME IN HOURS NOT MS!!!!!
-                //USE YOUR LOGIC TO SAVE IT IN RIGHT VALUES HERE!!!!!
-            }
+        // total time for this topic+technique in HOURS
+        val totalHours = courseTime.toDouble() / 3_600_000.0
+
+        // only send the *new* hours since the last save
+        val deltaHours = totalHours - lastSavedHoursForTopic
+        if (deltaHours > 0.0) {
+            FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
+
+            // per-day stats (your API takes Long, so fractions are dropped)
+            FirebaseService.updateDayStudyTime(code, deltaHours.toLong())
+
+            // remember how far we've synced
+            lastSavedHoursForTopic = totalHours
         }
     }
 
