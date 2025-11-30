@@ -226,17 +226,7 @@ object FirebaseService {
         }
     }
 
-    fun getGrade(courseCode: String, testName: String, callback: (Double) -> Unit){
-        val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Tests/$testName/Grade")
-        ref.get().addOnSuccessListener { snapshot ->
-            val grade = snapshot.getValue(Double::class.java) ?: 0.0
-            callback(grade)
-        }
-            .addOnFailureListener { e ->
-                Log.e("Grade", "Grade was failed to be received")
-            }
-    }
+
     fun setGrade(courseName:String, testName: String, grade: Double){
         val uid = auth.currentUser?.uid
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseName/Tests/$testName")

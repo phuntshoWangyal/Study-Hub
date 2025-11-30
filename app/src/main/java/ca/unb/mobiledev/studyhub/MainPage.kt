@@ -143,5 +143,9 @@ class MainPage : AppCompatActivity(),
         loadFragment(fragment, "testScores")
     }
 
+    fun openTestDetails(courseCode: String, testName: String) {
+        val fragment = TestDetailFragment.newInstance(courseCode, testName)
+        loadFragment(fragment, "testDetails")
+    }
 
 }

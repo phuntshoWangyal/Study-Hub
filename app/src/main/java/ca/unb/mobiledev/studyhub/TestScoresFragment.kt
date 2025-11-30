@@ -123,7 +123,8 @@ class TestScoresFragment : Fragment() {
     }
 
     private fun openTestDetails(test: TestItem) {
-        // later: navigate to "Test details" screen (name, grade, topics)
+        val code = courseCode ?: return
+        (activity as? MainPage)?.openTestDetails(code, test.name)
     }
 
     private fun showEditTestDialog(test: TestItem) {
