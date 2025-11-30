@@ -20,7 +20,6 @@ import ca.unb.mobiledev.studyhub.FirebaseService.getTests
 import ca.unb.mobiledev.studyhub.FirebaseService.getTestTopics
 import ca.unb.mobiledev.studyhub.FirebaseService.getCourseTimeByTechnique
 import ca.unb.mobiledev.studyhub.FirebaseService.getTotalTime
-import ca.unb.mobiledev.studyhub.FirebaseService.firestore
 
 class rank_fragment : Fragment() {
 
@@ -135,6 +134,7 @@ class rank_fragment : Fragment() {
 
             val courseNames = courseList.toMutableList()
             val weeklyData = Array(courseList.size) { MutableList(7) { 0.0 } }
+
 
             var loadedCourses = 0
 
@@ -282,7 +282,9 @@ class rank_fragment : Fragment() {
 
                                 if (topicsLoaded == topics.size) {
 
+                                    //This is not correct again, we dont use firestore
                                     // All topics loaded: now fetch grade
+                                    /*
                                     firestore.collection("Grades")
                                         .document(testName)
                                         .get()
@@ -306,6 +308,31 @@ class rank_fragment : Fragment() {
                                             if (testsLoaded == tests.size)
                                                 drawTestChart(testNames, studyTotals, grades)
                                         }
+                                        */
+
+
+
+                                    //Uncomment when there is a course code to pass
+                                    FirebaseService.getGrade(firstCourse, testName){ grade ->
+                                        if(grade == 0.0){
+                                            studyTotals.add(totalStudy.toFloat())
+                                            grades.add(0f)
+                                            testsLoaded++
+
+                                            if (testsLoaded == tests.size)
+                                                drawTestChart(testNames, studyTotals, grades)
+                                        }
+                                        else{
+                                            studyTotals.add(totalStudy.toFloat())
+                                                grades.add(grade.toFloat())
+                                                testsLoaded++
+
+                                                if (testsLoaded == tests.size)
+                                                    drawTestChart(testNames, studyTotals, grades)
+                                        }
+                                    }
+
+
                                 }
                             }
                         }
