@@ -608,8 +608,8 @@ class CourseContentFragment : Fragment() {
                 }
 
                 (activity as? MainPage)?.updateCourse(oldCode, newCode, newName)
-                FirebaseService.updateCourseName(courseCode!!, newName)
-
+                FirebaseService.updateCourse(courseCode!!, newCode)
+                FirebaseService.updateCourseName(courseName!!, newName)
                 courseCode = newCode
                 courseName = newName
                 courseCodeView.text = newCode
@@ -628,6 +628,7 @@ class CourseContentFragment : Fragment() {
             .setMessage("Are you sure you want to delete this course?")
             .setPositiveButton("Delete") { _, _ ->
                 (activity as? MainPage)?.deleteCourse(code)
+                FirebaseService.deleteCourse(courseCode!!)
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -739,7 +740,7 @@ class CourseContentFragment : Fragment() {
 
             // per-day stats (drop fractions)
             FirebaseService.updateDayStudyTime(code, deltaHours)
-
+            FirebaseService.updateUserTime(deltaHours)
             lastSavedHoursForTopic = totalHours
         }
     }

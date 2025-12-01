@@ -84,7 +84,7 @@
                     android:id = "@+id/emailLoginField"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:hint="Enter Username">
+                    android:hint="Enter Your Email">
 
                 </EditText>
 
