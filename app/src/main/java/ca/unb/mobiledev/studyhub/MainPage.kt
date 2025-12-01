@@ -98,16 +98,25 @@ class MainPage : AppCompatActivity(),
             course.courseCode,
             course.courseName
         )
-        loadFragment(fragment, "courseContent")
+        loadFragment(fragment, "courseContent", addToBackStack = true)
     }
-
-    private fun loadFragment(fragment: Fragment, tag: String) {
+    private fun loadFragment(
+        fragment: Fragment,
+        tag: String,
+        addToBackStack: Boolean = false
+    ) {
         currentFragmentTag = tag
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.container, fragment, tag)
+
+        if (addToBackStack) {
+            transaction.addToBackStack(tag)
+        }
+
         transaction.commit()
         updateAddButtonIcon()
     }
+
 
     fun updateCourse(oldCode: String, newCode: String, newName: String) {
         val index = courseList.indexOfFirst { it.courseCode == oldCode }
@@ -140,12 +149,21 @@ class MainPage : AppCompatActivity(),
 
     fun openTestScores(courseCode: String) {
         val fragment = TestScoresFragment.newInstance(courseCode)
-        loadFragment(fragment, "testScores")
+        loadFragment(fragment, "testScores", addToBackStack = true)
     }
+
 
     fun openTestDetails(courseCode: String, testName: String) {
         val fragment = TestDetailFragment.newInstance(courseCode, testName)
-        loadFragment(fragment, "testDetails")
+        loadFragment(fragment, "testDetails", addToBackStack = true)
+    }
+    override fun onBackPressed() {
+        val fm = supportFragmentManager
+        if (fm.backStackEntryCount > 0) {
+            fm.popBackStack()
+        } else {
+            super.onBackPressed()
+        }
     }
 
 }

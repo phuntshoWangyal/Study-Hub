@@ -17,11 +17,7 @@ import com.google.firebase.Firebase
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [setting.newInstance] factory method to
- * create an instance of this fragment.
- */
+
 class setting_fragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
@@ -84,8 +80,13 @@ class setting_fragment : Fragment() {
         val cardView = view.findViewById<MaterialCardView>(R.id.signOutCardView)
         cardView.setOnClickListener {
             FirebaseService.signOut()
-            val intent = Intent(activity, LoginPage::class.java)
-            startActivity(intent)
+
+            val act = requireActivity()
+            val intent = Intent(act, LoginPage::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            act.startActivity(intent)
+            act.finish()
         }
 
         val emailCardView = view.findViewById<MaterialCardView>(R.id.editUserNameCardView)

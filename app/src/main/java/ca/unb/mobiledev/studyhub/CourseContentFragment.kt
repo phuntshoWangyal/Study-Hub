@@ -21,7 +21,6 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.CheckBox
 
-
 class CourseContentFragment : Fragment() {
 
     private lateinit var courseCodeView: TextView
@@ -38,16 +37,14 @@ class CourseContentFragment : Fragment() {
     private lateinit var noTopicMessage: TextView
 
     private lateinit var techniqueSpinner: Spinner
-
     private lateinit var topicMoreButton: ImageView
-
-
 
     private var courseCode: String? = null
     private var courseName: String? = null
     private var topicId: String? = null
     private var topicName: String? = null
 
+    // total time for current topic+technique (ms), NOT including currently-running session
     private var courseTime: Long = 0L
     private val db = FirebaseFirestore.getInstance()
 
@@ -57,23 +54,21 @@ class CourseContentFragment : Fragment() {
     private lateinit var techniques: List<String>
     private var allTechniqueStats = mutableMapOf<String, Pair<Long, Int>>()
     private var currentTechniqueIndex: Int = 0
+
+    // timer state
     private var timerStarted: Boolean = false
     private var lastSavedHoursForTopic: Double = 0.0
+    private var timerStartTsMs: Long = 0L      // wall-clock start time of current session
 
-    private var timerBase: Long = 0L
     private val topics: MutableList<String> = mutableListOf()
     private var currentTopicIndexInList: Int = -1
-
 
     private val prefs by lazy {
         requireContext().getSharedPreferences("timer_pref", Context.MODE_PRIVATE)
     }
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // get arguments passed in
         arguments?.let {
             courseCode = it.getString("course_code")
             courseName = it.getString("course_name")
@@ -91,7 +86,6 @@ class CourseContentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         courseCodeView = view.findViewById(R.id.courseContentCode)
         testTitleView  = view.findViewById(R.id.testTitle)
         topicNameView  = view.findViewById(R.id.topicName)
@@ -102,35 +96,28 @@ class CourseContentFragment : Fragment() {
         playButton     = view.findViewById(R.id.playButton)
         chronometer    = view.findViewById(R.id.chronometer)
         noTopicMessage = view.findViewById(R.id.noTopicMessage)
+        sessionCountView = view.findViewById(R.id.sessionCount)
 
         val btnViewTestScores = view.findViewById<Button>(R.id.btnViewTestScores)
-
         btnViewTestScores.setOnClickListener {
             val code = courseCode
             if (code == null) {
-                Toast.makeText(requireContext(),
-                    "Course code missing", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Course code missing",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
-
-            // Ask the activity to open the Test Scores page
             (activity as? MainPage)?.openTestScores(code)
         }
 
-
-
-        restoreTimerState()
-        sessionCountView = view.findViewById(R.id.sessionCount)
-        sessionCountView.text = sessionCount.toString()
-
         techniqueSpinner = view.findViewById(R.id.techniqueSpinner)
-
         techniques = listOf(
             "Your own Technique",
             "Pomodoro Technique",
             "Feynman Technique"
         )
-
 
         val spinnerAdapter = ArrayAdapter(
             requireContext(),
@@ -141,8 +128,6 @@ class CourseContentFragment : Fragment() {
         techniqueSpinner.adapter = spinnerAdapter
         currentTechniqueIndex = 0
         techniqueSpinner.setSelection(currentTechniqueIndex)
-
-
 
         techniqueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -163,21 +148,23 @@ class CourseContentFragment : Fragment() {
 
                 if (position == currentTechniqueIndex) return
 
-                // 🔹 before switching technique, sync time for the old one
+                // before switching technique, sync time for the old one
                 if (!courseCode.isNullOrEmpty() && topicName != null) {
                     syncTimeToFirebaseIfNeeded()
                     saveStudyStatsForTechnique()
                 }
 
-                // 🔹 switch
+                // switch
                 currentTechniqueIndex = position
 
-                // 🔹 reset local counters for the new technique
+                // reset local counters for the new technique
                 courseTime = 0L
                 lastSavedHoursForTopic = 0.0
                 updateStudyTimeLabel(0L)
+                sessionCount = 0
+                sessionCountView.text = "0"
 
-                // 🔹 load time for the new technique from DB
+                // load time for the new technique from DB
                 if (!courseCode.isNullOrEmpty() && topicName != null) {
                     loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
                 }
@@ -186,16 +173,12 @@ class CourseContentFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-
-
-
         courseCodeView.text = courseCode ?: "Course Code"
         topicNameView.text = "No topics yet"
         studyTimeView.text = "00:00:00"
-        sessionCountView.text = "0"
+        sessionCountView.text = sessionCount.toString()
 
         showNoTopicState()
-
 
         if (!courseCode.isNullOrEmpty()) {
             FirebaseService.getTopics(courseCode!!) { topicList ->
@@ -206,85 +189,86 @@ class CourseContentFragment : Fragment() {
                     showNoTopicState()
                     currentTopicIndexInList = -1
                 } else {
-                    // Start with the first topic
                     currentTopicIndexInList = 0
                     topicName = topics[currentTopicIndexInList]
                     topicNameView.text = topicName
-
-                    // Load stats for this topic + current technique
                     loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
                 }
             }
         }
 
-
+        // restore timer (after views are ready)
+        restoreTimerState()
 
         leftArrow.setOnClickListener {
             if (timerStarted) {
-                Toast.makeText(requireContext(), "Stop the timer before switching topics", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Stop the timer before switching topics",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
-            // No topics at all
             if (topics.isEmpty()) {
                 Toast.makeText(requireContext(), "Add a topic first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            // Only one topic
             if (topics.size == 1) {
                 Toast.makeText(requireContext(), "Only one topic", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            // Already at first topic
             if (currentTopicIndexInList <= 0) {
                 Toast.makeText(requireContext(), "No previous topic", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Save current topic’s stats before switching
             saveStudyStatsForTechnique()
-
             currentTopicIndexInList--
             switchToTopic(currentTopicIndexInList)
         }
 
         rightArrow.setOnClickListener {
             if (timerStarted) {
-                Toast.makeText(requireContext(), "Stop the timer before switching topics", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Stop the timer before switching topics",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
             if (topics.isEmpty()) {
                 Toast.makeText(requireContext(), "Add a topic first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (topics.size == 1) {
                 Toast.makeText(requireContext(), "Only one topic", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (currentTopicIndexInList >= topics.size - 1) {
                 Toast.makeText(requireContext(), "No next topic", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             saveStudyStatsForTechnique()
-
             currentTopicIndexInList++
             switchToTopic(currentTopicIndexInList)
         }
 
-
         playButton.setOnClickListener {
             if (topicName == null) {
-                Toast.makeText(requireContext(), "Create or select a topic first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Create or select a topic first",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
+
             if (timerStarted) {
-                // stop and add this session to total for *current technique*
-                courseTime += chronometerStop()
-                updateStudyTimeLabel(courseTime)
+                // pause
+                val sessionMs = chronometerStop()
+                // courseTime already updated in chronometerStop()
+                updateStudyTimeLabel(getCurrentAccumulatedMs())
 
                 sessionCount++
                 sessionCountView.text = sessionCount.toString()
@@ -301,50 +285,110 @@ class CourseContentFragment : Fragment() {
             }
         }
 
-
-
-        val editCourseCard = view.findViewById<androidx.cardview.widget.CardView>(R.id.editCourseCard)
+        val editCourseCard =
+            view.findViewById<androidx.cardview.widget.CardView>(R.id.editCourseCard)
 
         editCourseCard.setOnClickListener {
-            showEditCourseDialog()   // the function you already have for editing/deleting
+            showEditCourseDialog()
         }
-        topicMoreButton = view.findViewById(R.id.topicMoreButton)
 
+        topicMoreButton = view.findViewById(R.id.topicMoreButton)
         topicMoreButton.setOnClickListener {
             showTopicOptionsMenu(it)
         }
-
-
     }
-    private fun restoreTimerState() {
-        val running = prefs.getBoolean("timer_running", false)
 
-        if (!running) {
-            // timer is not running → chronometer reset to 0
+    // ---------------- TIMER HELPERS ----------------
+
+    private fun restoreTimerState() {
+        courseTime = prefs.getLong("course_time_ms", 0L)
+        sessionCount = prefs.getInt("session_count", 0)
+        val running = prefs.getBoolean("timer_running", false)
+        val startTs = prefs.getLong("timer_start_ts", 0L)
+
+        if (running && startTs > 0L) {
+            val nowMs = System.currentTimeMillis()
+            val elapsedSessionMs = nowMs - startTs
+            chronometer.base = SystemClock.elapsedRealtime() - elapsedSessionMs
+            chronometer.start()
+            playButton.setImageResource(R.drawable.pause)
+            timerStarted = true
+            timerStartTsMs = startTs
+        } else {
             chronometer.stop()
             chronometer.base = SystemClock.elapsedRealtime()
-            return
+            playButton.setImageResource(R.drawable.outline_arrow_right_24)
+            timerStarted = false
+            timerStartTsMs = 0L
         }
 
-        // Timer was running → continue counting from last start moment
-        val startRealtime = prefs.getLong("timer_start_realtime", 0L)
-        val now = SystemClock.elapsedRealtime()
-
-        // Rebuild the base so session time continues
-        timerBase = startRealtime
-        chronometer.base = timerBase
-
-        chronometer.start()
-        timerStarted = true
-        playButton.setImageResource(R.drawable.pause)
+        // update UI for total time
+        updateStudyTimeLabel(getCurrentAccumulatedMs())
+        sessionCountView.text = sessionCount.toString()
     }
 
+    private fun chronometerStart() {
+        val startTsMs = System.currentTimeMillis()
+        timerStartTsMs = startTsMs
+
+        prefs.edit()
+            .putBoolean("timer_running", true)
+            .putLong("timer_start_ts", startTsMs)
+            .apply()
+
+        val elapsedSinceStart = System.currentTimeMillis() - startTsMs
+        chronometer.base = SystemClock.elapsedRealtime() - elapsedSinceStart
+        chronometer.start()
+    }
+
+    private fun chronometerStop(): Long {
+        chronometer.stop()
+
+        val startTs = prefs.getLong("timer_start_ts", 0L)
+        val nowMs = System.currentTimeMillis()
+        val sessionMs =
+            if (startTs > 0L) nowMs - startTs
+            else (SystemClock.elapsedRealtime() - chronometer.base)
+
+        courseTime += sessionMs
+
+        prefs.edit()
+            .putBoolean("timer_running", false)
+            .remove("timer_start_ts")
+            .apply()
+
+        chronometer.base = SystemClock.elapsedRealtime()
+        timerStartTsMs = 0L
+
+        // don't forget to persist totals (sessionCount is updated outside)
+        persistTotals()
+
+        return sessionMs
+    }
+
+    private fun getCurrentAccumulatedMs(): Long {
+        val running = prefs.getBoolean("timer_running", false)
+        val startTs = prefs.getLong("timer_start_ts", 0L)
+        return if (running && startTs > 0L) {
+            val now = System.currentTimeMillis()
+            courseTime + (now - startTs)
+        } else {
+            courseTime
+        }
+    }
+
+    private fun persistTotals() {
+        prefs.edit()
+            .putLong("course_time_ms", courseTime)
+            .putInt("session_count", sessionCount)
+            .apply()
+    }
+
+    // --------------------------------------------------
 
     private fun showTopicOptionsMenu(anchor: View) {
         val popup = android.widget.PopupMenu(requireContext(), anchor)
         popup.menuInflater.inflate(R.menu.course_content_test_option, popup.menu)
-
-
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.optionAddTest -> {
@@ -355,21 +399,20 @@ class CourseContentFragment : Fragment() {
                     showEditTopicDialog()
                     true
                 }
-                R.id.optionRemoveTest-> {
+                R.id.optionRemoveTest -> {
                     showRemoveTopicDialog()
                     true
                 }
                 else -> false
             }
         }
-
         popup.show()
     }
 
     private fun showAddTopicDialog() {
         val builder = AlertDialog.Builder(requireContext())
         val dialogView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.add_topic_dialog, null)  // create this layout
+            .inflate(R.layout.add_topic_dialog, null)
 
         val nameInput = dialogView.findViewById<EditText>(R.id.edit_topic_name)
         val confirmButton = dialogView.findViewById<Button>(R.id.btn_add_topic)
@@ -386,14 +429,16 @@ class CourseContentFragment : Fragment() {
             }
 
             val code = courseCode ?: run {
-                Toast.makeText(requireContext(), "Course code missing", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Course code missing",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            // 1) Create topic in DB
             FirebaseService.createTopic(code, newTopicName)
 
-            // 2) Update local topic list so arrows see it
             if (!topics.contains(newTopicName)) {
                 topics.add(newTopicName)
             }
@@ -401,11 +446,9 @@ class CourseContentFragment : Fragment() {
 
             switchToTopic(currentTopicIndexInList)
 
-
             Toast.makeText(requireContext(), "Topic created", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
-
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
@@ -421,7 +464,8 @@ class CourseContentFragment : Fragment() {
         }
 
         val oldTopicName = topicName ?: run {
-            Toast.makeText(requireContext(), "No topic selected to rename", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "No topic selected to rename", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
@@ -432,7 +476,6 @@ class CourseContentFragment : Fragment() {
         val confirmButton = dialogView.findViewById<Button>(R.id.btn_confirm_edit_topic)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel_edit_topic)
 
-        // Pre-fill current topic name
         nameInput.setText(oldTopicName)
 
         val dialog = AlertDialog.Builder(requireContext())
@@ -461,7 +504,6 @@ class CourseContentFragment : Fragment() {
             topicName = newTopicName
             topicNameView.text = newTopicName
 
-            // Optionally reload stats for this renamed topic
             loadStudyStatsForTechnique(newTopicName, currentTechniqueIndex)
 
             Toast.makeText(requireContext(), "Topic renamed", Toast.LENGTH_SHORT).show()
@@ -474,6 +516,7 @@ class CourseContentFragment : Fragment() {
 
         dialog.show()
     }
+
     private fun showRemoveTopicDialog() {
         val code = courseCode ?: run {
             Toast.makeText(requireContext(), "Course code missing", Toast.LENGTH_SHORT).show()
@@ -481,7 +524,8 @@ class CourseContentFragment : Fragment() {
         }
 
         val currentTopic = topicName ?: run {
-            Toast.makeText(requireContext(), "No topic selected to delete", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "No topic selected to delete", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
@@ -490,31 +534,26 @@ class CourseContentFragment : Fragment() {
             .setMessage("Are you sure you want to delete \"$currentTopic\"? All study stats for this topic will be removed.")
             .setPositiveButton("Delete") { _, _ ->
 
-                // 1) Stop timer if running
                 if (timerStarted) {
                     chronometer.stop()
                     timerStarted = false
                     playButton.setImageResource(R.drawable.outline_arrow_right_24)
                 }
 
-                // 2) Reset local stats
                 courseTime = 0L
                 sessionCount = 0
                 sessionCountView.text = "0"
                 updateStudyTimeLabel(0L)
 
-                // 3) Remove from local list
                 val removedIndex = topics.indexOf(currentTopic)
                 if (removedIndex != -1) {
                     topics.removeAt(removedIndex)
                 }
 
                 if (topics.isEmpty()) {
-                    // no topics left
                     currentTopicIndexInList = -1
                     showNoTopicState()
                 } else {
-                    // move to a valid neighbour topic
                     currentTopicIndexInList = if (removedIndex >= topics.size) {
                         topics.size - 1
                     } else {
@@ -531,11 +570,9 @@ class CourseContentFragment : Fragment() {
             .show()
     }
 
-
     private fun showEditCourseDialog() {
         val oldCode = courseCode ?: return
 
-        // container layout for two inputs
         val container = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(10), dp(20), 0)
@@ -571,16 +608,12 @@ class CourseContentFragment : Fragment() {
                 }
 
                 (activity as? MainPage)?.updateCourse(oldCode, newCode, newName)
-                /*This Function exists in different branch, delete comments when merged
-                FirebaseService.updateCourse(courseCode!!, newCode)
-                 */
                 FirebaseService.updateCourseName(courseCode!!, newName)
 
                 courseCode = newCode
                 courseName = newName
                 courseCodeView.text = newCode
                 topicNameView.text = newName
-
             }
             .setNeutralButton("Delete course") { _, _ ->
                 showDeleteConfirmDialog(oldCode)
@@ -588,7 +621,6 @@ class CourseContentFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-
 
     private fun showDeleteConfirmDialog(code: String) {
         AlertDialog.Builder(requireContext())
@@ -600,55 +632,28 @@ class CourseContentFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
+
     private fun showNoTopicState() {
         topicName = null
-
         topicNameView.text = "No topics yet"
         studyTimeView.text = "00:00:00"
         sessionCount = 0
         sessionCountView.text = "0"
-
-
     }
-
-
-
 
     override fun onPause() {
         super.onPause()
 
-        val running = prefs.getBoolean("timer_running", false)
-        if (running) {
-            val now = SystemClock.elapsedRealtime()
-            val startRealtime = prefs.getLong("timer_start_realtime", 0L)
-            val elapsedSessionMs = now - startRealtime
-
-            // add current running session to local ms
-            courseTime += elapsedSessionMs
-
-            // clear running flag
-            prefs.edit()
-                .putBoolean("timer_running", false)
-                .remove("timer_start_realtime")
-                .apply()
-
-            chronometer.stop()
-            chronometer.base = now
-            timerStarted = false
-        }
+        // persist local totals
+        persistTotals()
 
         val code = courseCode
         val topic = topicName
         if (code != null && topic != null) {
-            // keep sessions in sync
             saveStudyStatsForTechnique()
-
-            // and sync time (in hours) for this topic+technique
             syncTimeToFirebaseIfNeeded()
         }
     }
-
-
 
     private fun updateStudyTimeLabel(totalMs: Long) {
         val hours = (totalMs / 3600000).toInt()
@@ -661,37 +666,6 @@ class CourseContentFragment : Fragment() {
         studyTimeView.text = "$hoursStr:$minStr:$secStr"
     }
 
-    private fun chronometerStart() {
-        val now = SystemClock.elapsedRealtime()
-
-        // Chronometer always starts from 0
-        timerBase = now
-        chronometer.base = timerBase
-        chronometer.start()
-
-        // Save running state persistently
-        prefs.edit()
-            .putBoolean("timer_running", true)
-            .putLong("timer_start_realtime", now)   // only store the REAL time when started
-            .apply()
-    }
-
-    private fun chronometerStop(): Long {
-        chronometer.stop()
-
-        val now = SystemClock.elapsedRealtime()
-        val session = now - chronometer.base
-
-
-        prefs.edit()
-            .putBoolean("timer_running", false)
-            .remove("timer_start_realtime") // Remove the start time
-            .apply()
-
-        chronometer.base = now
-
-        return session
-    }
     private fun switchToTopic(index: Int) {
         if (index < 0 || index >= topics.size) return
 
@@ -704,20 +678,22 @@ class CourseContentFragment : Fragment() {
         updateStudyTimeLabel(0L)
         lastSavedHoursForTopic = 0.0
 
+        // reset persistent timer state for the new topic
+        prefs.edit()
+            .putBoolean("timer_running", false)
+            .remove("timer_start_ts")
+            .putLong("course_time_ms", courseTime)
+            .putInt("session_count", sessionCount)
+            .apply()
+
         loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
     }
-
-
-
 
     private fun saveStudyStatsForTechnique() {
         val code = courseCode ?: return
         val topic = topicName ?: return
-
         FirebaseService.updateSession(code, topic, currentTechniqueIndex, sessionCount)
     }
-
-
 
     private fun dp(v: Int): Int = (resources.displayMetrics.density * v).toInt()
 
@@ -731,6 +707,7 @@ class CourseContentFragment : Fragment() {
             return frag
         }
     }
+
     private fun loadStudyStatsForTechnique(topic: String, technique: Int) {
         val code = courseCode ?: return
 
@@ -744,28 +721,31 @@ class CourseContentFragment : Fragment() {
             FirebaseService.getSessions(code, topic, technique) { sessions ->
                 sessionCount = sessions
                 sessionCountView.text = sessions.toString()
+                persistTotals()
             }
         }
     }
 
-
-
-    
     private fun syncTimeToFirebaseIfNeeded() {
         val code = courseCode ?: return
         val topic = topicName ?: return
 
-        val totalHours = courseTime.toDouble() / 3_600_000.0
+        val totalMs = getCurrentAccumulatedMs()
+        val totalHours = totalMs.toDouble() / 3_600_000.0
 
         val deltaHours = totalHours - lastSavedHoursForTopic
         if (deltaHours > 0.0) {
             FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
 
-            // per-day stats (your API takes Long, so fractions are dropped)
+            // per-day stats (drop fractions)
             FirebaseService.updateDayStudyTime(code, deltaHours)
 
             lastSavedHoursForTopic = totalHours
         }
+    }
+    override fun onResume() {
+        super.onResume()
+        restoreTimerState()
     }
 
 }

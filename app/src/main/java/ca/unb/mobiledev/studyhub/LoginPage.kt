@@ -79,7 +79,11 @@ class LoginPage : AppCompatActivity() {
                                 CourseStorage.saveCourses(this, uid, mergedCourses)
                                 startActivity(intent)
                             }
+                            val intent = Intent(this, MainPage::class.java)
+                            startActivity(intent)
+                            finish()
                         }
+
                     },
                     onError = { error ->
                         errorText.text = "Entered Username or Password is incorrect"
