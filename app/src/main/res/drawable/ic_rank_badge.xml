@@ -1,6 +1,13 @@
 <level-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:maxLevel="30" android:drawable="@drawable/ic_rank_iron" />
-    <item android:maxLevel="75" android:drawable="@drawable/ic_rank_silver" />
-    <item android:maxLevel="135" android:drawable="@drawable/ic_rank_gold" />
-    <item android:maxLevel="225" android:drawable="@drawable/ic_rank_diamond" />
+    <!-- Iron: 0–299 -->
+    <item android:maxLevel="299" android:drawable="@drawable/ic_rank_iron" />
+
+    <!-- Silver: 300–749 -->
+    <item android:maxLevel="749" android:drawable="@drawable/ic_rank_silver" />
+
+    <!-- Gold: 750–1349 -->
+    <item android:maxLevel="1349" android:drawable="@drawable/ic_rank_gold" />
+
+    <!-- Diamond: 1350+ -->
+    <item android:maxLevel="2250" android:drawable="@drawable/ic_rank_diamond" />
 </level-list>

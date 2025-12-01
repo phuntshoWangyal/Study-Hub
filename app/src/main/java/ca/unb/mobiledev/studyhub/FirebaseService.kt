@@ -364,19 +364,38 @@ object FirebaseService {
         }
     }
 
+    fun updateTotalCourseTime(courseCode: String, timeAdd: Double){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/StudiedTime")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            val ref2 = realtimeDb.getReference("users/$uid/Courses/$courseCode")
+            val userData = mapOf("StudiedTime" to time)
+            ref2.updateChildren(userData)
+        }
+    }
+
+    fun getTotalCourseTime(courseCode: String, callback: (Double) -> Unit){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/StudiedTime")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            callback(time)
+        }
+    }
     fun getCourseTimeByTechnique(courseCode: String, topic: String, technique: Int, callback: (Double) -> Unit){
         val uid = auth.currentUser?.uid
         val techniqueString = technique.toString()
         val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/$techniqueString")
-
         ref.get().addOnSuccessListener { snapshot ->
             val time = snapshot.getValue(Double::class.java) ?: 0.0
+            Log.i("Time", time.toString())
             callback(time)
         }.addOnFailureListener {
             Log.e("Getting time", "Could not receive time from database")
             callback(0.0)
         }
-
     }
 
     fun updateTime(name: String, timeAdd: Long, topic: String, technique: Int){
@@ -416,6 +435,16 @@ object FirebaseService {
                     ref.child(topicName).removeValue()
                 }
             }
+        }
+    }
+
+    fun updateTotalTopicTime(courseCode: String, timeAdd: Double, topic: String){
+        val uid = auth.currentUser?.uid
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Topics/$topic/timeOfStudy")
+        ref.get().addOnSuccessListener { snapshot ->
+            var time = snapshot.getValue(Double::class.java) ?: 0.0
+            time += timeAdd
+            ref.setValue(time)
         }
     }
 

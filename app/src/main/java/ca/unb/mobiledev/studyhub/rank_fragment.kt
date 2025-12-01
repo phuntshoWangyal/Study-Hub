@@ -232,7 +232,8 @@ class rank_fragment : Fragment() {
             activity?.runOnUiThread {
                 expTotal.text = "Exp: $exp"
 
-                totalPoints = exp.coerceAtMost(225)
+                totalPoints = exp.coerceAtMost(2250)
+
                 applyRankProgress(totalPoints)
             }
         }
@@ -240,33 +241,29 @@ class rank_fragment : Fragment() {
 
     private fun applyRankProgress(points: Int) {
 
+        // Update badge image (based on points range)
         rankBadge.setImageResource(R.drawable.ic_rank_badge)
         rankBadge.setImageLevel(points)
 
-        val nextLevelMax = when {
-            points < 300 -> 300
-            points < 750 -> 750
-            points < 1350 -> 1350
-            points < 2250 -> 2250
-            else -> 2250
+        // Level thresholds
+        val (prevLevelMin, nextLevelMax) = when {
+            points < 300 -> 0 to 300        // Iron
+            points < 750 -> 300 to 750      // Silver
+            points < 1350 -> 750 to 1350    // Gold
+            points < 2250 -> 1350 to 2250   // Diamond progression
+            else -> 2250 to 2250            // Maxed out
         }
 
-        val prevLevelMin = when {
-            points < 300 -> 0
-            points < 750 -> 300
-            points < 1350 -> 750
-            points < 2250 -> 1350
-            else -> 2250
-        }
-
+        // Calculate progress %
         val levelProgress =
-            if (nextLevelMax - prevLevelMin > 0)
+            if (nextLevelMax > prevLevelMin)
                 ((points - prevLevelMin).toFloat() /
                         (nextLevelMax - prevLevelMin) * 100).toInt()
-            else 0
+            else 100
 
         rankProgress.progress = levelProgress.coerceIn(0, 100)
     }
+
 
 
     private fun getWeekRangeString(week: Int, year: Int): String {

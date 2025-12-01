@@ -737,8 +737,9 @@ class CourseContentFragment : Fragment() {
         val deltaHours = totalHours - lastSavedHoursForTopic
         if (deltaHours > 0.0) {
             FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
-
+            FirebaseService.updateTotalTopicTime(code, deltaHours, topic)
             // per-day stats (drop fractions)
+            FirebaseService.updateTotalCourseTime(code, deltaHours)
             FirebaseService.updateDayStudyTime(code, deltaHours)
             FirebaseService.updateUserTime(deltaHours)
             lastSavedHoursForTopic = totalHours
