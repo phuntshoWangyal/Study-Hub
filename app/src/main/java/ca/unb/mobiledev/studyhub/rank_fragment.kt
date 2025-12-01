@@ -171,7 +171,7 @@ class rank_fragment : Fragment() {
 
 
     }
-    // -------------------- DROPDOWNS --------------------
+
     private fun showDropDown(
         anchor: View,
         items: List<String>,
@@ -216,45 +216,29 @@ class rank_fragment : Fragment() {
         loadWeeklyChart()
     }
 
-
-    // -------------------------------------------------------------
-    //                  EXPERIENCE + RANKING LOGIC
-    // -------------------------------------------------------------
     private fun loadExperience() {
         getTotalTime { totalStudyDouble ->
-
-            // Convert to hours if needed — assuming already hours
             val totalStudyHours = totalStudyDouble
-
-            // Scale EXP = 3x total study time
             val exp = (totalStudyHours * 100).toInt()
-
             activity?.runOnUiThread {
                 expTotal.text = "Exp: $exp"
-
-                totalPoints = exp.coerceAtMost(2250)
-
+                totalPoints = exp.coerceAtMost(3000)
                 applyRankProgress(totalPoints)
             }
         }
     }
 
     private fun applyRankProgress(points: Int) {
-
-        // Update badge image (based on points range)
         rankBadge.setImageResource(R.drawable.ic_rank_badge)
         rankBadge.setImageLevel(points)
-
-        // Level thresholds
         val (prevLevelMin, nextLevelMax) = when {
-            points < 300 -> 0 to 300        // Iron
-            points < 750 -> 300 to 750      // Silver
-            points < 1350 -> 750 to 1350    // Gold
-            points < 2250 -> 1350 to 2250   // Diamond progression
-            else -> 2250 to 2250            // Maxed out
+            points < 500 -> 0 to 500
+            points < 1000 -> 500 to 1000
+            points < 1750 -> 1000 to 1750
+            points < 3000 -> 1750 to 3000
+            else -> 3000 to 3000
         }
 
-        // Calculate progress %
         val levelProgress =
             if (nextLevelMax > prevLevelMin)
                 ((points - prevLevelMin).toFloat() /
@@ -284,11 +268,6 @@ class rank_fragment : Fragment() {
         return "${sdf.format(start)} - ${sdf.format(end)}"
     }
 
-
-
-    // -------------------------------------------------------------
-    //                  WEEKLY BAR CHART
-    // -------------------------------------------------------------
     private fun loadWeeklyChart() {
         getCourseList { courseList ->
             courseListMemory = courseList
@@ -336,7 +315,6 @@ class rank_fragment : Fragment() {
 
         val barEntries = ArrayList<BarEntry>()
 
-        // Build stack values for each day
         for (day in 0 until 7) {
             val stackValues = FloatArray(courseNames.size)
 
@@ -347,7 +325,6 @@ class rank_fragment : Fragment() {
             barEntries.add(BarEntry(day.toFloat(), stackValues))
         }
 
-        // DataSet
         val barSet = BarDataSet(barEntries, "Weekly Study by Course")
         barSet.setDrawValues(false)
 
