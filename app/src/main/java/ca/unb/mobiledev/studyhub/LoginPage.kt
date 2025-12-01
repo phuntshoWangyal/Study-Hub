@@ -67,6 +67,8 @@ class LoginPage : AppCompatActivity() {
 
                             if (newCodes.isEmpty()) {
                                 // nothing new to sync, just go to main page
+                                loginButton.isEnabled = true
+                                loginButton.alpha = 1f
                                 startActivity(intent)
                             } else {
                                 // create Course objects using code as both code + name (for now)
@@ -77,8 +79,11 @@ class LoginPage : AppCompatActivity() {
 
                                 // save merged list and go to main page
                                 CourseStorage.saveCourses(this, uid, mergedCourses)
+                                loginButton.isEnabled = true
+                                loginButton.alpha = 1f
                                 startActivity(intent)
                             }
+
                         }
                     },
                     onError = { error ->
