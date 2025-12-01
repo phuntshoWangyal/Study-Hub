@@ -38,7 +38,8 @@ class rank_fragment : Fragment() {
 
     // Charts
     private lateinit var weeklyBarChart: BarChart
-    private lateinit var testChart: ScatterChart
+    private lateinit var testChart: CombinedChart
+
     private var displayedWeek = FirebaseService.getCurrentWeek().toInt()
     private var displayedYear = FirebaseService.getCurrentYear().toInt()
 
@@ -58,8 +59,6 @@ class rank_fragment : Fragment() {
     )
     private var selectedCourse: String? = null
     private var selectedTechnique: Int = 0
-
-
 
 
     // Data
@@ -168,8 +167,6 @@ class rank_fragment : Fragment() {
         }
 
 
-
-
     }
 
     private fun showDropDown(
@@ -247,7 +244,6 @@ class rank_fragment : Fragment() {
 
         rankProgress.progress = levelProgress.coerceIn(0, 100)
     }
-
 
 
     private fun getWeekRangeString(week: Int, year: Int): String {
@@ -375,7 +371,6 @@ class rank_fragment : Fragment() {
     }
 
 
-
     private fun loadTestChart(selectedCourse: String?, technique: Int) {
         val course = selectedCourse ?: return
 
@@ -451,49 +446,98 @@ class rank_fragment : Fragment() {
         }
     }
 
+    private fun calculateLinearRegression(x: List<Float>, y: List<Float>): Pair<List<Entry>, Double> {
+        val n = x.size
+        if (n == 0) return Pair(emptyList(), 0.0)
+
+        val sumX = x.sumOf { it.toDouble() }
+        val sumY = y.sumOf { it.toDouble() }
+        val sumXY = x.zip(y).sumOf { (xx, yy) -> (xx * yy).toDouble() }
+        val sumX2 = x.sumOf { (it * it).toDouble() }
+
+        val slope = ((n * sumXY) - (sumX * sumY)) / ((n * sumX2) - (sumX * sumX))
+        val intercept = (sumY - slope * sumX) / n
+
+        val meanY = y.average().toFloat()
+        val ssTot = y.sumOf { ((it - meanY) * (it - meanY)).toDouble() }
+        val ssRes = x.zip(y).sumOf { (xx, yy) ->
+            val pred = slope * xx + intercept
+            ((yy - pred) * (yy - pred))
+        }
+
+        val r2 = if (ssTot == 0.0) 1.0 else 1 - (ssRes / ssTot)
+
+        val minX = x.minOrNull() ?: 0f
+        val maxX = x.maxOrNull() ?: 1f
+
+        val trendEntries = listOf(
+            Entry(minX, (slope * minX + intercept).toFloat()),
+            Entry(maxX, (slope * maxX + intercept).toFloat())
+        )
+
+        return Pair(trendEntries, r2)
+    }
+
+
 
     private fun drawTestScatter(
         testNames: List<String>,
         studyHoursRaw: List<Float>,
         grades: List<Float>
     ) {
+
         if (testNames.isEmpty()) {
             testChart.clear()
             testChart.invalidate()
             return
         }
 
-        // --- Convert hours → seconds so tiny values appear ---
-        val xValues = studyHoursRaw.map { it * 3600f }  // convert to seconds
-        val maxX = (xValues.maxOrNull() ?: 0f).coerceAtLeast(1f)
+        val xValues = studyHoursRaw.map { it * 3600f }
+        val maxX = (xValues.maxOrNull() ?: 1f)
 
-        val entries = ArrayList<Entry>()
-        for (i in testNames.indices) {
-            val e = Entry(xValues[i], grades[i])
-            e.data = testNames[i]
-            entries.add(e)
+        val scatterEntries = testNames.indices.map { i ->
+            Entry(xValues[i], grades[i]).apply { data = testNames[i] }
         }
 
-        val scatterSet = ScatterDataSet(entries, "Study time vs grade").apply {
+        // ---- Linear Regression ----
+        val (trendEntries, r2) = calculateLinearRegression(xValues, grades)
+
+        // ---- Scatter dataset ----
+        val scatterSet = ScatterDataSet(scatterEntries, "Study vs Grade").apply {
             color = Color.parseColor("#4285F4")
             setScatterShape(ScatterChart.ScatterShape.CIRCLE)
             scatterShapeSize = 12f
-
             setDrawValues(true)
             valueTextSize = 10f
             valueFormatter = object : ValueFormatter() {
-                override fun getPointLabel(e: Entry?): String {
-                    return (e?.data as? String) ?: ""
-                }
+                override fun getPointLabel(e: Entry?): String =
+                    e?.data?.toString() ?: ""
             }
         }
 
-        testChart.apply {
-            data = ScatterData(scatterSet)
-            description.isEnabled = false
-            legend.isEnabled = false   // Cleaner look
+        // ---- Trend line dataset ----
+        val trendSet = LineDataSet(trendEntries, "Trend line").apply {
+            color = Color.RED
+            lineWidth = 2.5f
+            setDrawCircles(false)
+            setDrawValues(false)
+        }
 
-            // --- Y Axis (Grade) ---
+        // ---- Corrected CombinedData ----
+        val combined = CombinedData()
+        combined.setData(ScatterData(scatterSet))
+        combined.setData(LineData(trendSet))
+
+        testChart.data = combined
+
+        // ---- Chart UI ----
+        testChart.apply {
+            description.isEnabled = true
+            description.text = "R² = ${"%.3f".format(r2)}"
+            description.textColor = Color.BLACK
+
+            legend.isEnabled = false
+
             axisLeft.apply {
                 axisMinimum = 0f
                 axisMaximum = 100f
@@ -501,29 +545,22 @@ class rank_fragment : Fragment() {
             }
             axisRight.isEnabled = false
 
-            // --- X Axis (Seconds studied) ---
             xAxis.apply {
                 position = XAxis.XAxisPosition.BOTTOM
                 axisMinimum = 0f
-                axisMaximum = maxX * 1.3f   // prevent squishing
+                axisMaximum = maxX * 1.3f
                 granularity = maxX / 5f
                 setDrawGridLines(false)
                 valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String {
-                        return "${value.toInt()}s"
-                    }
+                    override fun getFormattedValue(value: Float): String =
+                        "${value.toInt()}s"
                 }
             }
 
             setTouchEnabled(true)
             isDragEnabled = true
             setScaleEnabled(true)
-
             invalidate()
         }
     }
-
-
 }
-
-
