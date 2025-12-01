@@ -644,8 +644,6 @@ class CourseContentFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-
-        // persist local totals
         persistTotals()
 
         val code = courseCode
@@ -679,7 +677,6 @@ class CourseContentFragment : Fragment() {
         updateStudyTimeLabel(0L)
         lastSavedHoursForTopic = 0.0
 
-        // reset persistent timer state for the new topic
         prefs.edit()
             .putBoolean("timer_running", false)
             .remove("timer_start_ts")
@@ -738,7 +735,6 @@ class CourseContentFragment : Fragment() {
         if (deltaHours > 0.0) {
             FirebaseService.updateTopicTime(code, deltaHours, topic, currentTechniqueIndex)
             FirebaseService.updateTotalTopicTime(code, deltaHours, topic)
-            // per-day stats (drop fractions)
             FirebaseService.updateTotalCourseTime(code, deltaHours)
             FirebaseService.updateDayStudyTime(code, deltaHours)
             FirebaseService.updateUserTime(deltaHours)

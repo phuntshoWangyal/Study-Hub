@@ -101,7 +101,6 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
-                    <!-- Title Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -136,7 +135,6 @@
 
                     </LinearLayout>
 
-                    <!-- NEW: Date Range Text -->
                     <TextView
                         android:id="@+id/weeklyDateRange"
                         android:layout_width="match_parent"
@@ -172,14 +170,12 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
-                    <!-- TOP BAR: COURSE SELECT + TECHNIQUE SELECT -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center">
 
-                        <!-- Course selector -->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -205,7 +201,6 @@
                                 android:src="@drawable/ic_arrow_down" />
                         </LinearLayout>
 
-                        <!-- Technique selector -->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -232,14 +227,12 @@
 
                     </LinearLayout>
 
-                    <!-- Chart -->
                     <com.github.mikephil.charting.charts.CombinedChart
                         android:id="@+id/courseBarChart"
                         android:layout_width="match_parent"
                         android:layout_height="400dp"
                         android:layout_marginTop="8dp" />
 
-                    <!-- Hint text -->
                     <TextView
                         android:id="@+id/courseHint"
                         android:layout_width="match_parent"

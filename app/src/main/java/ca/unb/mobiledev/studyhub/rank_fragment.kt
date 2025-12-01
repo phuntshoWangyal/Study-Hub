@@ -12,6 +12,8 @@ import android.widget.ListView
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.CombinedChart
@@ -36,7 +38,6 @@ class rank_fragment : Fragment() {
     private lateinit var expTotal: TextView
     private lateinit var rankProgress: ProgressBar
 
-    // Charts
     private lateinit var weeklyBarChart: BarChart
     private lateinit var testChart: CombinedChart
 
@@ -49,6 +50,7 @@ class rank_fragment : Fragment() {
 
     private lateinit var courseTitle: TextView
     private lateinit var techniqueTitle: TextView
+    private lateinit var suggestion: TextView
     private lateinit var dropCourse: ImageView
     private lateinit var dropTechnique: ImageView
     private var courseListMemory = listOf<String>()
@@ -60,8 +62,9 @@ class rank_fragment : Fragment() {
     private var selectedCourse: String? = null
     private var selectedTechnique: Int = 0
 
+    private var r2: Double = 0.0
 
-    // Data
+    private var slope: Double = 0.0
     private var totalPoints: Int = 0
     private val days = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
@@ -88,6 +91,7 @@ class rank_fragment : Fragment() {
         techniqueTitle = view.findViewById(R.id.techniqueSelector)
         dropCourse = view.findViewById(R.id.dropDownArrow)
         dropTechnique = view.findViewById(R.id.dropDownTechnique)
+        suggestion = view.findViewById(R.id.courseHint)
 
         expTotal.text = "Exp: 0"
         rankBadge.setImageResource(R.drawable.ic_rank_badge)
@@ -157,7 +161,33 @@ class rank_fragment : Fragment() {
             }
         }
 
+        suggestion.setOnClickListener {
+            showSuggestionDialog()
+        }
 
+
+
+    }
+
+    private fun showSuggestionDialog() {
+        var message: String
+        if(r2 < 0.3){
+            message = "Not enough correlation between time studied and grade."
+        }
+        else{
+            if(slope >= 0.67){
+                message = "Your study techniques are good, keep it up!"
+            }
+            else{
+                message = "Try to change your study technique for better study efficiency"
+            }
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Suggestion")
+            .setMessage(message)
+            .setPositiveButton("Understood") { _, _ ->
+            }
+            .show()
     }
 
     private fun showDropDown(
@@ -426,7 +456,7 @@ class rank_fragment : Fragment() {
         val sumXY = x.zip(y).sumOf { (xx, yy) -> (xx * yy).toDouble() }
         val sumX2 = x.sumOf { (it * it).toDouble() }
 
-        val slope = ((n * sumXY) - (sumX * sumY)) / ((n * sumX2) - (sumX * sumX))
+        slope = ((n * sumXY) - (sumX * sumY)) / ((n * sumX2) - (sumX * sumX))
         val intercept = (sumY - slope * sumX) / n
 
         val meanY = y.average().toFloat()
@@ -436,7 +466,7 @@ class rank_fragment : Fragment() {
             ((yy - pred) * (yy - pred))
         }
 
-        val r2 = if (ssTot == 0.0) 1.0 else 1 - (ssRes / ssTot)
+        r2 = if (ssTot == 0.0) 1.0 else 1 - (ssRes / ssTot)
 
         val minX = x.minOrNull() ?: 0f
         val maxX = x.maxOrNull() ?: 1f
