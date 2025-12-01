@@ -178,7 +178,7 @@ object FirebaseService {
 
     fun getTestTopics(courseCode: String, testName: String, callback: (List<String>) -> Unit){
         val uid = auth.currentUser?.uid
-        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Tests/$testName")
+        val ref = realtimeDb.getReference("users/$uid/Courses/$courseCode/Tests/$testName/Topics")
         ref.get()
             .addOnSuccessListener { snapshot ->
                 val courseNames = mutableListOf<String>()

@@ -233,7 +233,7 @@
                     </LinearLayout>
 
                     <!-- Chart -->
-                    <com.github.mikephil.charting.charts.CombinedChart
+                    <com.github.mikephil.charting.charts.ScatterChart
                         android:id="@+id/courseBarChart"
                         android:layout_width="match_parent"
                         android:layout_height="400dp"

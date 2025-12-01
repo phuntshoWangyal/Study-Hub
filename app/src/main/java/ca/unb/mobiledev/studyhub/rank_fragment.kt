@@ -15,6 +15,11 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.CombinedChart
+import com.github.mikephil.charting.charts.ScatterChart
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.ScatterData
+import com.github.mikephil.charting.data.ScatterDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
@@ -27,14 +32,13 @@ import ca.unb.mobiledev.studyhub.FirebaseService.getTotalTime
 
 class rank_fragment : Fragment() {
 
-    // ------------------ UI ------------------
     private lateinit var rankBadge: ImageView
     private lateinit var expTotal: TextView
     private lateinit var rankProgress: ProgressBar
 
     // Charts
     private lateinit var weeklyBarChart: BarChart
-    private lateinit var testChart: CombinedChart
+    private lateinit var testChart: ScatterChart
     private var displayedWeek = FirebaseService.getCurrentWeek().toInt()
     private var displayedYear = FirebaseService.getCurrentYear().toInt()
 
@@ -154,6 +158,7 @@ class rank_fragment : Fragment() {
 
 
         dropTechnique.setOnClickListener {
+
             showDropDown(dropTechnique, techniqueListMemory) { selected ->
                 selectedTechnique = techniqueListMemory.indexOf(selected)
                 techniqueTitle.text = selected
@@ -396,68 +401,72 @@ class rank_fragment : Fragment() {
     }
 
 
-    // -------------------------------------------------------------
-    //                  TEST CHART (Bar = Study, Line = Grade)
-    // -------------------------------------------------------------
-    private fun loadTestChart(selectedCourse: String?, selectedTechnique: Int?) {
 
-        // ---- Guard checks ----
+    private fun loadTestChart(selectedCourse: String?, technique: Int) {
         val course = selectedCourse ?: return
-        val technique = selectedTechnique ?: return
 
-        // Reset chart early to avoid showing old data
-        drawTestChart(emptyList(), emptyList(), emptyList())
+        // Clear old data
+        drawTestScatter(emptyList(), emptyList(), emptyList())
 
         getTests(course) { tests ->
             if (tests.isEmpty()) {
-                drawTestChart(emptyList(), emptyList(), emptyList())
+                drawTestScatter(emptyList(), emptyList(), emptyList())
                 return@getTests
             }
 
-            val testNames = ArrayList<String>()
-            val studyTotals = ArrayList<Float>()
-            val grades = ArrayList<Float>()
+            // testNames is the label list in fixed order
+            val testNames = tests.toList()
 
-            var testsLoaded = 0
+            // Pre-allocate arrays so each index = one test
+            val studyTotalsHours = MutableList(tests.size) { 0f } // X values (hours)
+            val grades = MutableList(tests.size) { 0f }           // Y values (0–100)
 
-            for (test in tests) {
-                testNames.add(test)
+            var testsCompleted = 0
 
-                getTestTopics(course, test) { topics ->
+            tests.forEachIndexed { testIndex, testName ->
+
+                getTestTopics(course, testName) { topics ->
+
+                    // If this test has no topics → 0 hours, but still show grade
                     if (topics.isEmpty()) {
-                        // No topics = 0 study time
-                        studyTotals.add(0f)
+                        FirebaseService.getGrade(course, testName) { grade ->
+                            grades[testIndex] = grade.toFloat()
+                            testsCompleted++
 
-                        FirebaseService.getGrade(course, test) { grade ->
-                            grades.add(grade.toFloat())
-                            testsLoaded++
-
-                            if (testsLoaded == tests.size) {
-                                drawTestChart(testNames, studyTotals, grades)
+                            if (testsCompleted == tests.size) {
+                                drawTestScatter(testNames, studyTotalsHours, grades)
                             }
                         }
-
                         return@getTestTopics
                     }
 
-                    var testStudyTotal = 0.0
+                    var testStudyTotalHours = 0.0
                     var topicsLoaded = 0
 
-                    for (topic in topics) {
-                        getCourseTimeByTechnique(course, topic, technique) { time ->
-                            testStudyTotal += time
+                    topics.forEach { topicName ->
+                        getCourseTimeByTechnique(course, topicName, technique) { timeHours ->
+                            // timeHours is already "hours" for this topic+technique
+                            testStudyTotalHours += timeHours
                             topicsLoaded++
 
-                            // All topics finished -> now load grade
+                            // Once we've got all topics for this test, fetch the grade
                             if (topicsLoaded == topics.size) {
+                                FirebaseService.getGrade(course, testName) { grade ->
+                                    studyTotalsHours[testIndex] = testStudyTotalHours.toFloat()
+                                    grades[testIndex] = grade.toFloat()
+                                    testsCompleted++
 
-                                FirebaseService.getGrade(course, test) { grade ->
-                                    studyTotals.add(testStudyTotal.toFloat())
-                                    grades.add(grade.toFloat())
-                                    testsLoaded++
-
-                                    if (testsLoaded == tests.size) {
-                                        drawTestChart(testNames, studyTotals, grades)
+                                    android.util.Log.d(
+                                        "RankFragment",
+                                        "FINISHED test=$testName → totalHours=${testStudyTotalHours.toFloat()}, grade=${grade.toFloat()}"
+                                    )
+                                    // When ALL tests are done, draw the scatter once
+                                    if (testsCompleted == tests.size) {
+                                        android.util.Log.d(
+                                            "RankFragment",
+                                            "Final studyTotalsHours=$studyTotalsHours, grades=$grades"
+                                        )
+                                        drawTestScatter(testNames, studyTotalsHours, grades)
                                     }
                                 }
                             }
@@ -468,61 +477,79 @@ class rank_fragment : Fragment() {
         }
     }
 
-    private fun drawTestChart(
+
+    private fun drawTestScatter(
         testNames: List<String>,
-        studyTotals: List<Float>,
+        studyHoursRaw: List<Float>,
         grades: List<Float>
     ) {
-
-        val barEntries = ArrayList<BarEntry>()
-        val lineEntries = ArrayList<Entry>()
-
-        for (i in studyTotals.indices)
-            barEntries.add(BarEntry(i.toFloat(), studyTotals[i]))
-
-        for (i in grades.indices)
-            lineEntries.add(Entry(i.toFloat(), grades[i]))
-
-        val barSet = BarDataSet(barEntries, "Study (hrs)").apply {
-            color = Color.parseColor("#D9534F")
-            valueTextColor = Color.DKGRAY
-            valueTextSize = 10f
+        if (testNames.isEmpty()) {
+            testChart.clear()
+            testChart.invalidate()
+            return
         }
 
-        val lineSet = LineDataSet(lineEntries, "Grade").apply {
-            color = Color.BLUE
-            lineWidth = 2f
-            setCircleColor(Color.BLUE)
-            circleRadius = 4f
-            valueTextSize = 10f
-            axisDependency = com.github.mikephil.charting.components.YAxis.AxisDependency.RIGHT
+        // --- Convert hours → seconds so tiny values appear ---
+        val xValues = studyHoursRaw.map { it * 3600f }  // convert to seconds
+        val maxX = (xValues.maxOrNull() ?: 0f).coerceAtLeast(1f)
+
+        val entries = ArrayList<Entry>()
+        for (i in testNames.indices) {
+            val e = Entry(xValues[i], grades[i])
+            e.data = testNames[i]
+            entries.add(e)
         }
 
-        val combined = CombinedData().apply {
-            setData(BarData(barSet))
-            setData(LineData(lineSet))
+        val scatterSet = ScatterDataSet(entries, "Study time vs grade").apply {
+            color = Color.parseColor("#4285F4")
+            setScatterShape(ScatterChart.ScatterShape.CIRCLE)
+            scatterShapeSize = 12f
+
+            setDrawValues(true)
+            valueTextSize = 10f
+            valueFormatter = object : ValueFormatter() {
+                override fun getPointLabel(e: Entry?): String {
+                    return (e?.data as? String) ?: ""
+                }
+            }
         }
 
         testChart.apply {
-            data = combined
+            data = ScatterData(scatterSet)
             description.isEnabled = false
-            axisRight.isEnabled = false
+            legend.isEnabled = false   // Cleaner look
 
-            xAxis.apply {
-                valueFormatter = IndexAxisValueFormatter(testNames)
-                position = XAxis.XAxisPosition.BOTTOM
-                granularity = 1f
+            // --- Y Axis (Grade) ---
+            axisLeft.apply {
+                axisMinimum = 0f
+                axisMaximum = 100f
                 setDrawGridLines(false)
             }
+            axisRight.isEnabled = false
 
-            axisLeft.apply {
-                setDrawGridLines(true)
+            // --- X Axis (Seconds studied) ---
+            xAxis.apply {
+                position = XAxis.XAxisPosition.BOTTOM
                 axisMinimum = 0f
+                axisMaximum = maxX * 1.3f   // prevent squishing
+                granularity = maxX / 5f
+                setDrawGridLines(false)
+                valueFormatter = object : ValueFormatter() {
+                    override fun getFormattedValue(value: Float): String {
+                        return "${value.toInt()}s"
+                    }
+                }
             }
+
+            setTouchEnabled(true)
+            isDragEnabled = true
+            setScaleEnabled(true)
 
             invalidate()
         }
     }
+
+
 }
 
 
