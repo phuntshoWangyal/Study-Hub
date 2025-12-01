@@ -76,7 +76,6 @@ class rank_fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ----- Bind UI -----
         rankBadge = view.findViewById(R.id.rankBadge)
         expTotal = view.findViewById(R.id.expTotal)
         rankProgress = view.findViewById(R.id.rankProgress)
@@ -90,19 +89,13 @@ class rank_fragment : Fragment() {
         dropCourse = view.findViewById(R.id.dropDownArrow)
         dropTechnique = view.findViewById(R.id.dropDownTechnique)
 
-
-        // Show placeholder UI until Firebase loads
         expTotal.text = "Exp: 0"
         rankBadge.setImageResource(R.drawable.ic_rank_badge)
         rankProgress.progress = 0
 
-        // Load EXP
         loadExperience()
 
-        // Load charts
         loadWeeklyChart()
-
-        // Load Test Chart ONLY after courses load
         getCourseList { list ->
             courseListMemory = list
             if (list.isNotEmpty()) {
@@ -120,8 +113,6 @@ class rank_fragment : Fragment() {
 
         arrowLeft.setOnClickListener {
             displayedWeek--
-
-            // Handle when week < 1 (previous year)
             if (displayedWeek < 1) {
                 displayedYear--
                 val cal = java.util.Calendar.getInstance()
@@ -176,7 +167,6 @@ class rank_fragment : Fragment() {
     ) {
         val context = requireContext()
 
-        // Build the list view
         val listView = ListView(context).apply {
             adapter = ArrayAdapter(
                 context,
@@ -186,7 +176,6 @@ class rank_fragment : Fragment() {
             dividerHeight = 1
         }
 
-        // PopupWindow with WRAP_CONTENT
         val popupWindow = PopupWindow(
             listView,
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -202,8 +191,6 @@ class rank_fragment : Fragment() {
         popupWindow.elevation = 20f
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.WHITE))
         popupWindow.isOutsideTouchable = true
-
-        // Show dropdown
         popupWindow.showAsDropDown(anchor, 0, 10)
     }
 
@@ -252,11 +239,8 @@ class rank_fragment : Fragment() {
         cal.set(java.util.Calendar.WEEK_OF_YEAR, week)
         cal.set(java.util.Calendar.YEAR, year)
 
-        // Start = Sunday
         cal.set(java.util.Calendar.DAY_OF_WEEK, cal.firstDayOfWeek)
         val start = cal.time
-
-        // End = Saturday
         cal.add(java.util.Calendar.DAY_OF_WEEK, 6)
         val end = cal.time
 
@@ -324,15 +308,14 @@ class rank_fragment : Fragment() {
         val barSet = BarDataSet(barEntries, "Weekly Study by Course")
         barSet.setDrawValues(false)
 
-        // Create a color per course
         val colors = listOf(
-            Color.parseColor("#D9534F"), // red
-            Color.parseColor("#5BC0DE"), // cyan
-            Color.parseColor("#5CB85C"), // green
-            Color.parseColor("#F0AD4E"), // orange
-            Color.parseColor("#4285F4"), // blue
-            Color.parseColor("#9B59B6"), // purple
-            Color.parseColor("#FF66CC"), // pink
+            Color.parseColor("#D9534F"),
+            Color.parseColor("#5BC0DE"),
+            Color.parseColor("#5CB85C"),
+            Color.parseColor("#F0AD4E"),
+            Color.parseColor("#4285F4"),
+            Color.parseColor("#9B59B6"),
+            Color.parseColor("#FF66CC"),
         )
 
         val appliedColors = mutableListOf<Int>()
@@ -373,8 +356,6 @@ class rank_fragment : Fragment() {
 
     private fun loadTestChart(selectedCourse: String?, technique: Int) {
         val course = selectedCourse ?: return
-
-        // Clear old data
         drawTestScatter(emptyList(), emptyList(), emptyList())
 
         getTests(course) { tests ->
@@ -382,21 +363,15 @@ class rank_fragment : Fragment() {
                 drawTestScatter(emptyList(), emptyList(), emptyList())
                 return@getTests
             }
-
-            // testNames is the label list in fixed order
             val testNames = tests.toList()
-
-            // Pre-allocate arrays so each index = one test
-            val studyTotalsHours = MutableList(tests.size) { 0f } // X values (hours)
-            val grades = MutableList(tests.size) { 0f }           // Y values (0–100)
+            val studyTotalsHours = MutableList(tests.size) { 0f }
+            val grades = MutableList(tests.size) { 0f }
 
             var testsCompleted = 0
 
             tests.forEachIndexed { testIndex, testName ->
 
                 getTestTopics(course, testName) { topics ->
-
-                    // If this test has no topics → 0 hours, but still show grade
                     if (topics.isEmpty()) {
                         FirebaseService.getGrade(course, testName) { grade ->
                             grades[testIndex] = grade.toFloat()
@@ -414,11 +389,8 @@ class rank_fragment : Fragment() {
 
                     topics.forEach { topicName ->
                         getCourseTimeByTechnique(course, topicName, technique) { timeHours ->
-                            // timeHours is already "hours" for this topic+technique
                             testStudyTotalHours += timeHours
                             topicsLoaded++
-
-                            // Once we've got all topics for this test, fetch the grade
                             if (topicsLoaded == topics.size) {
                                 FirebaseService.getGrade(course, testName) { grade ->
                                     studyTotalsHours[testIndex] = testStudyTotalHours.toFloat()
@@ -429,7 +401,6 @@ class rank_fragment : Fragment() {
                                         "RankFragment",
                                         "FINISHED test=$testName → totalHours=${testStudyTotalHours.toFloat()}, grade=${grade.toFloat()}"
                                     )
-                                    // When ALL tests are done, draw the scatter once
                                     if (testsCompleted == tests.size) {
                                         android.util.Log.d(
                                             "RankFragment",
@@ -499,10 +470,8 @@ class rank_fragment : Fragment() {
             Entry(xValues[i], grades[i]).apply { data = testNames[i] }
         }
 
-        // ---- Linear Regression ----
         val (trendEntries, r2) = calculateLinearRegression(xValues, grades)
 
-        // ---- Scatter dataset ----
         val scatterSet = ScatterDataSet(scatterEntries, "Study vs Grade").apply {
             color = Color.parseColor("#4285F4")
             setScatterShape(ScatterChart.ScatterShape.CIRCLE)
@@ -515,7 +484,6 @@ class rank_fragment : Fragment() {
             }
         }
 
-        // ---- Trend line dataset ----
         val trendSet = LineDataSet(trendEntries, "Trend line").apply {
             color = Color.RED
             lineWidth = 2.5f
@@ -523,14 +491,12 @@ class rank_fragment : Fragment() {
             setDrawValues(false)
         }
 
-        // ---- Corrected CombinedData ----
         val combined = CombinedData()
         combined.setData(ScatterData(scatterSet))
         combined.setData(LineData(trendSet))
 
         testChart.data = combined
 
-        // ---- Chart UI ----
         testChart.apply {
             description.isEnabled = true
             description.text = "R² = ${"%.3f".format(r2)}"
