@@ -111,6 +111,8 @@
                 <Button
                     android:text="Forgot your password?"
                     android:layout_width="250dp"
+                    android:id="@+id/forgotPasswordButton"
+
                     android:layout_height = "50dp"
                     android:textSize="15sp"
                     android:backgroundTint="@color/white"

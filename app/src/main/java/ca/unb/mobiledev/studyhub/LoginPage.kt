@@ -101,5 +101,12 @@ class LoginPage : AppCompatActivity() {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
         }
+
+        val forgotPasswordButton: Button = findViewById(R.id.forgotPasswordButton)
+        forgotPasswordButton.setOnClickListener {
+            val intent = Intent(this, ResetPasswordActivity::class.java)
+            startActivity(intent)
+        }
     }
+
 }
