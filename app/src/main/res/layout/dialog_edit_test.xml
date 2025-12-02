@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test name"
+            android:textSize="14sp"
+            android:textColor="#666666" />
+
+        <EditText
+            android:id="@+id/editTestNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Midterm Exam"
+            android:singleLine="true"
+            android:paddingVertical="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grade"
+            android:layout_marginTop="16dp"
+            android:textSize="14sp"
+            android:textColor="#666666" />
+
+        <EditText
+            android:id="@+id/editGradeEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. 85"
+            android:inputType="numberDecimal"
+            android:singleLine="true"
+            android:paddingVertical="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Topics for this test"
+            android:layout_marginTop="16dp"
+            android:textSize="14sp"
+            android:textColor="#666666" />
+
+        <!-- We will add CheckBoxes here in code -->
+        <LinearLayout
+            android:id="@+id/topicsCheckboxContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</ScrollView>

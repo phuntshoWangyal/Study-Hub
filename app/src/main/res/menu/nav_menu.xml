@@ -5,8 +5,8 @@
         android:icon="@drawable/ic_calendar" />
     <item
         android:id="@+id/classAddButton"
-        android:icon="@drawable/home_add" />
+        android:icon="@drawable/ic_add" />
     <item
         android:id="@+id/settingButton"
         android:icon="@drawable/ic_setting_gear" />
-</menu>
+</menu>  

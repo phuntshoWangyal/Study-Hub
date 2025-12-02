@@ -12,20 +12,13 @@ import com.google.android.material.card.MaterialCardView
 import android.app.AlertDialog
 import android.content.Context
 import android.widget.EditText
+import com.google.firebase.Firebase
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [setting.newInstance] factory method to
- * create an instance of this fragment.
- */
+
 class setting_fragment : Fragment() {
-    // TODO: Rename and chGITange types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
@@ -73,11 +66,27 @@ class setting_fragment : Fragment() {
             }
         }
 
+        val timeText: TextView = view.findViewById(R.id.totalHourStudyProfile)
+        FirebaseService.getTotalTime { time ->
+            val hours = time.toInt()
+            val minutes = ((time - hours) * 60).toInt()
+            val seconds = (((time - hours) * 60 - minutes) * 60).toInt()
+            val hoursStr = String.format("%02d", hours)
+            val minStr = String.format("%02d", minutes)
+            val secStr = String.format("%02d", seconds)
+            timeText.text = "$hoursStr:$minStr:$secStr"
+        }
+
         val cardView = view.findViewById<MaterialCardView>(R.id.signOutCardView)
         cardView.setOnClickListener {
             FirebaseService.signOut()
-            val intent = Intent(activity, LoginPage::class.java)
-            startActivity(intent)
+
+            val act = requireActivity()
+            val intent = Intent(act, LoginPage::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            act.startActivity(intent)
+            act.finish()
         }
 
         val emailCardView = view.findViewById<MaterialCardView>(R.id.editUserNameCardView)

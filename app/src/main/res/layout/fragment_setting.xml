@@ -102,7 +102,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/dateJonedLableProfile"
                 android:layout_marginTop="20dp"
-                android:text="Total Time Study" />
+                android:text="Total Time Studied" />
 
             <TextView
                 android:id="@+id/totalHourStudyProfile"
@@ -135,7 +135,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:drawableStart="@drawable/ic_person_black"
-                        android:drawableEnd="@drawable/ic_grey_arrow"
+                        android:drawableEnd="@drawable/ic_arrow_right"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
                         android:text="Edit User Name"/>
@@ -157,7 +157,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:drawableStart="@drawable/ic_lock_password"
-                        android:drawableEnd="@drawable/ic_grey_arrow"
+                        android:drawableEnd="@drawable/ic_arrow_right"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
                         android:text="Update Password"/>
@@ -178,7 +178,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:drawableStart="@drawable/ic_question_mark"
-                        android:drawableEnd="@drawable/ic_grey_arrow"
+                        android:drawableEnd="@drawable/ic_arrow_right"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
                         android:text="About Us"/>
@@ -198,7 +198,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:drawableStart="@drawable/ic_power_button"
-                        android:drawableEnd="@drawable/ic_grey_arrow"
+                        android:drawableEnd="@drawable/ic_arrow_right"
                         android:drawablePadding="10dp"
                         android:gravity="center_vertical"
                         android:text="Log Out"/>

@@ -1,0 +1,6 @@
+<level-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:maxLevel="500" android:drawable="@drawable/ic_rank_iron" />
+    <item android:maxLevel="1000" android:drawable="@drawable/ic_rank_silver" />
+    <item android:maxLevel="1750" android:drawable="@drawable/ic_rank_gold" />
+    <item android:maxLevel="3000" android:drawable="@drawable/ic_rank_diamond" />
+</level-list>
