@@ -58,9 +58,3 @@ Based on regression analysis:<br>
    - Suggested weak topics<br>
    - Technique effectiveness<br>
 6. Level up with EXP earned through studying.<br><br>
-
-## Tech Stack<br>
-- Kotlin<br>
-- Firebase Realtime Database<br>
-- MPAndroidChart<br>
-- Android Jetpack Components<br>
