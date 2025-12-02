@@ -25,9 +25,8 @@ class AboutUsFragment : Fragment() {
         val link1: LinearLayout = view.findViewById(R.id.linkedinLink1)
         val link2: LinearLayout = view.findViewById(R.id.linkedinLink2)
         val link3: LinearLayout = view.findViewById(R.id.linkedinLink3)
-
-        val url1 = "https://www.linkedin.com/in/phuntsho-wangyal"
-        val url2 = "https://www.linkedin.com/in/tonypham06/"
+        val url1 = "https://www.linkedin.com/in/tonypham06/"
+        val url2 = "https://www.linkedin.com/in/phuntsho-wangyal"
         val url3 = "https://www.instagram.com/serhiikhrapchun"
 
         link1.setOnClickListener { openUrl(url1) }
