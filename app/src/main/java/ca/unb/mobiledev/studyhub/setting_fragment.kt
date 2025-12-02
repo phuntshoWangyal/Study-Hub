@@ -47,6 +47,7 @@ class setting_fragment : Fragment() {
 
         val usernameText: TextView = view.findViewById(R.id.userName)
         val usernameField: TextView = view.findViewById(R.id.userNameProfile)
+
         FirebaseService.getName { name ->
             if (name != null) {
                 usernameText.text = name
@@ -89,6 +90,12 @@ class setting_fragment : Fragment() {
             act.finish()
         }
 
+        val aboutCard = view.findViewById<MaterialCardView>(R.id.aboutUsCardView)
+        aboutCard.setOnClickListener {
+            (activity as? MainPage)?.loadFragment(AboutUsFragment(), "aboutUs", addToBackStack = true)
+        }
+
+
         val emailCardView = view.findViewById<MaterialCardView>(R.id.editUserNameCardView)
         emailCardView.setOnClickListener {
             showChangeUsernameDialog(view.context)
@@ -115,6 +122,7 @@ class setting_fragment : Fragment() {
         val nameInput = dialogView.findViewById<EditText>(R.id.nameInput)
         val confirmButton = dialogView.findViewById<Button>(R.id.confirmButton)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
+
 
         val dialog = AlertDialog.Builder(context)
             .setView(dialogView)

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top red header bar (similar to settings screen) -->
+        <RelativeLayout
+            android:id="@+id/aboutHeaderBar"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:background="@color/white">
+
+            <ImageView
+                android:id="@+id/aboutLogo"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"
+                android:src="@drawable/ic_logo"
+                android:background="@android:color/white"
+                android:scaleType="centerInside"
+                android:padding="10dp"
+                android:elevation="4dp" />
+
+            <TextView
+                android:id="@+id/aboutTitleHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/aboutLogo"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                android:text="About StudyHub"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="20sp" />
+
+        </RelativeLayout>
+
+        <!-- Content area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Main description card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/aboutDescriptionCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardUseCompatPadding="true"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/aboutTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="StudyHub"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:textColor="@color/red"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/aboutSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Your personal study companion."
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"
+                        android:fontFamily="@font/poppins_bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <TextView
+                        android:id="@+id/aboutDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="StudyHub helps students track study time by course and topic, use proven study techniques like Pomodoro, and stay organized with tests, stats, and progress in one place. Our goal is to make it easier to build consistent habits and actually feel good about your studying."
+                        android:textSize="15sp"
+                        android:lineSpacingExtra="3dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Connect with us card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/connectCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardUseCompatPadding="true"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/connectTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Connect with us"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/connectSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Follow us and stay updated on new features and improvements."
+                        android:textSize="14sp"
+                        android:textColor="@android:color/darker_gray"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- LinkedIn link 1 -->
+                    <LinearLayout
+                        android:id="@+id/linkedinLink1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_linkedin"
+                            android:contentDescription="LinkedIn icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tony Pham"
+                            android:textSize="15sp"
+                            android:layout_marginStart="12dp"
+                            android:textColor="@color/bright_blue" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/linkedinLink2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_linkedin"
+                            android:contentDescription="LinkedIn icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Phuntsho Wangyal Galay"
+                            android:textSize="15sp"
+                            android:layout_marginStart="12dp"
+                            android:textColor="@color/bright_blue" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/linkedinLink3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ig_icon"
+                            android:contentDescription="ig icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Serhii Krapchun"
+                            android:textSize="15sp"
+                            android:layout_marginStart="12dp"
+                            android:textColor="@color/bright_blue" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

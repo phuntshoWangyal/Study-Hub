@@ -28,7 +28,6 @@ class MainPage : AppCompatActivity(),
 
         currentUserId = FirebaseService.auth.currentUser?.uid ?: "guest"
 
-        // ⬇️ load courses for THIS user
         courseList = CourseStorage.loadCourses(this, currentUserId)
 
         bottomNav = findViewById(R.id.bottomNav)
@@ -100,7 +99,7 @@ class MainPage : AppCompatActivity(),
         )
         loadFragment(fragment, "courseContent", addToBackStack = true)
     }
-    private fun loadFragment(
+    fun loadFragment(
         fragment: Fragment,
         tag: String,
         addToBackStack: Boolean = false
