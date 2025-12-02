@@ -1,104 +1,66 @@
-StudyHub – Smart Study Tracker
+# StudyHub – Smart Study Tracker<br>
 
-StudyHub is an Android application designed to help students track their study habits, understand their learning efficiency, and improve academic performance through data-driven insights. The app allows students to create courses, add topics, log study time, take tests, and visualize how study patterns relate to grades.
+StudyHub is an Android application designed to help students track their study habits, understand their learning efficiency, and improve academic performance through data-driven insights.<br>
+The app allows students to create courses, add topics, log study time, take tests, and visualize how study patterns relate to grades.<br><br>
 
-Features
-Course and Topic Management
+## Features<br><br>
 
-Create courses and customize them as needed.
+### Course and Topic Management<br>
+Create courses and customize them as needed.<br>
+Add topics under each course to organize study material.<br>
+Associate tests with one or multiple topics.<br>
+Tests can belong to multiple courses if required.<br><br>
 
-Add topics under each course to organize study material.
+### Smart Study Time Tracking<br>
+Track study time per topic using different techniques:<br>
+Freestyle<br>
+Pomodoro<br>
+90-minute blocks<br>
+Each study session is logged and stored for later analysis.<br><br>
 
-Associate tests with one or multiple topics.
+### Visual Analytics<br><br>
 
-Tests can belong to multiple courses if required.
+**Weekly Recap Graph**<br>
+Displays a stacked bar chart of study time for each course.<br>
+Navigate between weeks to compare study habits.<br><br>
 
-Smart Study Time Tracking
+**Study Efficiency Graph**<br>
+Scatter plot showing study time versus test grade.<br>
+Automatic linear regression calculates:<br>
+Slope (improvement rate)<br>
+R² (correlation strength)<br>
+Trend line updates dynamically based on user data.<br><br>
 
-Track study time per topic using different techniques:
+### Personalized Suggestions<br><br>
 
-Freestyle
+Based on test results:<br>
+Detects weak topics where the student scored below 60.<br>
+Removes duplicates for a clear list of topics to review.<br><br>
 
-Pomodoro
+Based on regression analysis:<br>
+Low R² indicates insufficient data.<br>
+High slope suggests an effective study technique.<br>
+Low slope suggests the technique may need improvement.<br><br>
 
-90-minute blocks
+### Ranking System<br>
+Earn EXP for every second spent studying.<br>
+Progress through ranking tiers (Iron → Bronze → Silver → Gold → Diamond).<br>
+Dynamic badge and progress bar show real-time progression.<br><br>
 
-Each study session is logged and stored for later analysis.
+## Workflow Overview<br>
+Create a course.<br>
+Add topics to break down the subject into smaller concepts.<br>
+Start a study session using a preferred study technique.<br>
+Create tests and link them to specific topics.<br>
+Review analytics:<br>
+Weekly recap<br>
+Study efficiency graph<br>
+Suggested weak topics<br>
+Technique effectiveness<br>
+Level up by earning EXP through consistent study time.<br><br>
 
-Visual Analytics
-
-Weekly Recap Graph
-
-Displays a stacked bar chart of study time for each course.
-
-Navigate between weeks to compare study habits.
-
-Study Efficiency Graph
-
-Scatter plot showing study time versus test grade.
-
-Automatic linear regression calculates:
-
-Slope (improvement rate)
-
-R² (correlation strength)
-
-Trend line updates dynamically based on user data.
-
-Personalized Suggestions
-
-Based on test results:
-
-Detects weak topics where the student scored below 60.
-
-Removes duplicates for a clear list of topics to review.
-
-Based on regression analysis:
-
-Low R² indicates insufficient data.
-
-High slope suggests an effective study technique.
-
-Low slope suggests the technique may need improvement.
-
-Ranking System
-
-To keep users motivated:
-
-Earn EXP for every second spent studying.
-
-Progress through ranking tiers (Iron → Bronze → Silver → Gold → Diamond).
-
-Dynamic badge and progress bar show real-time progression.
-
-Workflow Overview
-
-Create a course.
-
-Add topics to break down the subject into smaller concepts.
-
-Start a study session using a preferred study technique.
-
-Create tests and link them to specific topics.
-
-Review analytics:
-
-Weekly recap
-
-Study efficiency graph
-
-Suggested weak topics
-
-Technique effectiveness
-
-Level up by earning EXP through consistent study time.
-
-Tech Stack
-
-Kotlin
-
-Firebase Realtime Database
-
-MPAndroidChart
-
-Android Jetpack Components
+## Tech Stack<br>
+Kotlin<br>
+Firebase Realtime Database<br>
+MPAndroidChart<br>
+Android Jetpack Components<br>
