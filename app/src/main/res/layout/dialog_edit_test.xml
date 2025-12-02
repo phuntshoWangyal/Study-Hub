@@ -49,7 +49,6 @@
             android:textSize="14sp"
             android:textColor="#666666" />
 
-        <!-- We will add CheckBoxes here in code -->
         <LinearLayout
             android:id="@+id/topicsCheckboxContainer"
             android:layout_width="match_parent"

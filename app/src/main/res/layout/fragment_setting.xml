@@ -40,7 +40,6 @@
                 android:textColor="@color/white"/>
         </RelativeLayout>
 
-        <!-- Adding  info section to show username, email, date joined and total time study -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -112,7 +111,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="20dp"
                 android:text="00:00:00" />
-            <!-- Button section for editing profile, log out,  about us -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -121,7 +120,6 @@
                 android:orientation="vertical">
 
 
-                <!-- cardView for editing username -->
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/editUserNameCardView"
@@ -142,7 +140,6 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- cardView for editing password -->
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/editPasswordCardView"
@@ -163,7 +160,6 @@
                         android:text="Update Password"/>
 
                 </com.google.android.material.card.MaterialCardView>
-                <!-- cardView for about us section -->
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/aboutUsCardView"
@@ -184,7 +180,6 @@
                         android:text="About Us"/>
 
                 </com.google.android.material.card.MaterialCardView>
-                <!-- cardView for sign out -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/signOutCardView"
                     android:layout_width="match_parent"

@@ -10,7 +10,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Top red header bar (similar to settings screen) -->
         <RelativeLayout
             android:id="@+id/aboutHeaderBar"
             android:layout_width="match_parent"
@@ -43,14 +42,12 @@
 
         </RelativeLayout>
 
-        <!-- Content area -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Main description card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/aboutDescriptionCard"
                 android:layout_width="match_parent"
@@ -97,7 +94,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Connect with us card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/connectCard"
                 android:layout_width="match_parent"
@@ -130,7 +126,6 @@
                         android:textColor="@android:color/darker_gray"
                         android:layout_marginBottom="12dp" />
 
-                    <!-- LinkedIn link 1 -->
                     <LinearLayout
                         android:id="@+id/linkedinLink1"
                         android:layout_width="match_parent"
@@ -191,7 +186,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Serhii Krapchun"
+                            android:text="Serhii Khrapchun"
                             android:textSize="15sp"
                             android:layout_marginStart="12dp"
                             android:textColor="@color/bright_blue" />
