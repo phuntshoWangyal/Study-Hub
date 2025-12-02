@@ -17,6 +17,7 @@ recyclerview = "1.4.0"
 firebaseBom = "34.4.0"
 googleServices = "4.4.4"
 firebaseCommonKtx = "22.0.1"
+cronetEmbedded = "141.7340.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +42,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseBom" }
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
+cronet-embedded = { group = "org.chromium.net", name = "cronet-embedded", version.ref = "cronetEmbedded" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
