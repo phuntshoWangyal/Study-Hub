@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:layout_marginTop="20dp">
 
-        <!-- Course title + Edit/Delete row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,7 +29,6 @@
                 android:textSize="20sp"
                 android:textColor="#222222" />
 
-            <!-- Edit course button -->
             <LinearLayout
                 android:id="@+id/btnEditTest"
                 android:layout_width="wrap_content"
@@ -61,7 +59,6 @@
                     android:fontFamily="@font/poppins_medium" />
             </LinearLayout>
 
-            <!-- Delete course button -->
             <ImageButton
                 android:id="@+id/btnDeleteTest"
                 android:layout_width="32dp"
@@ -75,7 +72,6 @@
                 android:foreground="?attr/selectableItemBackgroundBorderless" />
         </LinearLayout>
 
-        <!-- TEST SUMMARY CARD -->
         <androidx.cardview.widget.CardView
             android:id="@+id/testSummaryCard"
             android:layout_width="match_parent"
@@ -95,7 +91,6 @@
                 android:padding="16dp"
                 android:background="@drawable/test_banner">
 
-                <!-- Test name -->
                 <TextView
                     android:id="@+id/testNameText"
                     android:layout_width="wrap_content"
@@ -105,7 +100,6 @@
                     android:textSize="18sp"
                     android:textColor="#222222" />
 
-                <!-- Grade text -->
                 <TextView
                     android:id="@+id/testGradeText"
                     android:layout_width="wrap_content"
@@ -119,7 +113,6 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Section title -->
         <TextView
             android:id="@+id/topicsLabel"
             android:layout_width="wrap_content"
@@ -129,7 +122,6 @@
             android:textSize="20sp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Container for topic chips -->
         <LinearLayout
             android:id="@+id/topicsContainer"
             android:layout_width="match_parent"

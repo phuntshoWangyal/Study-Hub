@@ -22,7 +22,6 @@ android:fillViewport="true">
             android:layout_margin="25dp"
             android:fontFamily="@font/poppins_bold" />
 
-        <!-- Edit course card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/editCourseCard"
             android:layout_width="match_parent"
@@ -60,8 +59,6 @@ android:fillViewport="true">
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Test scores card -->
-        <!-- Test scores card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/testScoresCard"
             android:layout_width="match_parent"
@@ -98,7 +95,6 @@ android:fillViewport="true">
         </androidx.cardview.widget.CardView>
 
 
-        <!-- Topic / stats / timer card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -114,7 +110,6 @@ android:fillViewport="true">
                 android:orientation="vertical"
                 >
 
-                <!-- Top row: Topic label + 3 dots -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -140,7 +135,6 @@ android:fillViewport="true">
                         app:tint="@color/red" />
                 </LinearLayout>
 
-                <!-- Topic name + left/right arrows -->
                 <LinearLayout
                     android:id="@+id/topicRow"
                     android:layout_width="match_parent"
@@ -185,7 +179,6 @@ android:fillViewport="true">
                     android:layout_gravity="center"
                     android:padding="16dp" />
 
-                <!-- Stats row: Total time | Sessions -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -195,7 +188,6 @@ android:fillViewport="true">
                     android:paddingEnd="24dp"
                     android:paddingBottom="16dp">
 
-                    <!-- Total study time -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -224,7 +216,6 @@ android:fillViewport="true">
                         android:layout_height="32dp"
                         android:background="@android:color/darker_gray" />
 
-                    <!-- Number of sessions -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -249,7 +240,6 @@ android:fillViewport="true">
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Study technique selector -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -273,7 +263,6 @@ android:fillViewport="true">
                         android:layout_weight="1" />
                 </LinearLayout>
 
-                <!-- Notes row: only PDF container now -->
                 <LinearLayout
                     android:id="@+id/pdfRow"
                     android:layout_width="match_parent"
@@ -291,7 +280,6 @@ android:fillViewport="true">
                         android:orientation="horizontal" />
                 </LinearLayout>
 
-                <!-- Current session timer -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -305,7 +293,6 @@ android:fillViewport="true">
                         android:textSize="20sp" />
                 </LinearLayout>
 
-                <!-- Play button -->
                 <ImageView
                     android:id="@+id/playButton"
                     android:layout_width="40dp"
@@ -318,7 +305,6 @@ android:fillViewport="true">
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
-        <!-- Study Techniques section (no outer card) -->
         <TextView
             android:id="@+id/studyTechniquesTitle"
             android:layout_width="match_parent"
