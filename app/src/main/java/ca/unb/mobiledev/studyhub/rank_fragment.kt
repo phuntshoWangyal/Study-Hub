@@ -168,8 +168,8 @@ class rank_fragment : Fragment() {
         }
 
 
-
     }
+
     private fun getWeakTopics(
         course: String,
         callback: (List<String>) -> Unit
@@ -209,7 +209,6 @@ class rank_fragment : Fragment() {
     }
 
 
-
     private fun showSuggestionDialog() {
         val course = selectedCourse ?: return
 
@@ -236,7 +235,8 @@ class rank_fragment : Fragment() {
                 } else if (slope >= 0.10) {
                     suggestionMessage = "Your technique is okay, but can improve.\n\n$topicMessage"
                 } else {
-                    suggestionMessage = "Your technique might not be effective — consider switching.\n\n$topicMessage"
+                    suggestionMessage =
+                        "Your technique might not be effective — consider switching.\n\n$topicMessage"
                 }
             }
 
@@ -506,7 +506,10 @@ class rank_fragment : Fragment() {
         }
     }
 
-    private fun calculateLinearRegression(x: List<Float>, y: List<Float>): Pair<List<Entry>, Double> {
+    private fun calculateLinearRegression(
+        x: List<Float>,
+        y: List<Float>
+    ): Pair<List<Entry>, Double> {
         val n = x.size
         if (n == 0) return Pair(emptyList(), 0.0)
 
@@ -539,28 +542,41 @@ class rank_fragment : Fragment() {
     }
 
 
-
     private fun drawTestScatter(
         testNames: List<String>,
         studyHoursRaw: List<Float>,
         grades: List<Float>
     ) {
-
         if (testNames.isEmpty()) {
             testChart.clear()
             testChart.invalidate()
             return
         }
 
-        val xValues = studyHoursRaw
-        val maxX = (xValues.maxOrNull() ?: 1f)
+        // studyHoursRaw is expected to be in HOURS (float)
+        val maxHours = (studyHoursRaw.maxOrNull() ?: 0f)
+        val useSeconds = maxHours < 1f // if biggest test < 1 hour -> display seconds
 
-        val scatterEntries = testNames.indices.map { i ->
-            Entry(xValues[i], grades[i]).apply { data = testNames[i] }
+        // x used in regression (HOURS)
+        val xForRegression = studyHoursRaw
+
+        // x used for chart plotting (either HOURS or SECONDS)
+        val xForChart = if (useSeconds) studyHoursRaw.map { it * 3600f } else studyHoursRaw
+
+        // Regression uses hours so slope = grade / hour
+        val (trendEntriesHours, r2value) = calculateLinearRegression(xForRegression, grades)
+        // Convert trend entries to chart units (hours -> seconds if necessary)
+        val trendEntriesChart = trendEntriesHours.map { entry ->
+            val x = if (useSeconds) entry.x * 3600f else entry.x
+            Entry(x, entry.y)
         }
 
-        val (trendEntries, r2) = calculateLinearRegression(xValues, grades)
+        // Build scatter entries (chart units)
+        val scatterEntries = testNames.indices.map { i ->
+            Entry(xForChart[i], grades[i]).apply { data = testNames[i] }
+        }
 
+        // Scatter dataset
         val scatterSet = ScatterDataSet(scatterEntries, "Study vs Grade").apply {
             color = Color.parseColor("#4285F4")
             setScatterShape(ScatterChart.ScatterShape.CIRCLE)
@@ -568,29 +584,34 @@ class rank_fragment : Fragment() {
             setDrawValues(true)
             valueTextSize = 10f
             valueFormatter = object : ValueFormatter() {
-                override fun getPointLabel(e: Entry?): String =
-                    e?.data?.toString() ?: ""
+                override fun getPointLabel(e: Entry?): String = e?.data?.toString() ?: ""
             }
         }
 
-        val trendSet = LineDataSet(trendEntries, "Trend line").apply {
+        // Trend line dataset (chart units)
+        val trendSet = LineDataSet(trendEntriesChart, "Trend line").apply {
             color = Color.RED
             lineWidth = 2.5f
             setDrawCircles(false)
             setDrawValues(false)
         }
 
-        val combined = CombinedData()
-        combined.setData(ScatterData(scatterSet))
-        combined.setData(LineData(trendSet))
+        // Combined data (scatter + line)
+        val combined = CombinedData().apply {
+            setData(ScatterData(scatterSet))
+            setData(LineData(trendSet))
+        }
 
         testChart.data = combined
 
+        // UI formatting: axis labels depend on useSeconds
+        val maxChartX = (xForChart.maxOrNull() ?: 1f).coerceAtLeast(1f)
+        val gran = (maxChartX / 5f).coerceAtLeast(1f)
+
         testChart.apply {
             description.isEnabled = true
-            description.text = "R² = ${"%.3f".format(r2)}"
+            description.text = "R² = ${"%.3f".format(r2value)}"
             description.textColor = Color.BLACK
-
             legend.isEnabled = false
 
             axisLeft.apply {
@@ -603,15 +624,28 @@ class rank_fragment : Fragment() {
             xAxis.apply {
                 position = XAxis.XAxisPosition.BOTTOM
                 axisMinimum = 0f
-                axisMaximum = maxX * 1.3f
-                granularity = maxX / 5f
+                axisMaximum = maxChartX * 1.3f
+                granularity = gran
                 setDrawGridLines(false)
                 valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String =
-                        "${value.toInt()}s"
+                    override fun getFormattedValue(value: Float): String {
+                        return if (useSeconds) {
+                            // show seconds
+                            "${value.toInt()}s"
+                        } else {
+                            // show hours, keep 1 decimal if < 10 or integer otherwise
+                            val v = value
+                            if (v < 10f && v % 1f != 0f) String.format(
+                                "%.1fh",
+                                v
+                            ) else String.format("%.0fh", v)
+                        }
+                    }
                 }
             }
 
+            // draw order: scatter on top of trend line
+            setDrawOrder(arrayOf(CombinedChart.DrawOrder.LINE, CombinedChart.DrawOrder.SCATTER))
             setTouchEnabled(true)
             isDragEnabled = true
             setScaleEnabled(true)
