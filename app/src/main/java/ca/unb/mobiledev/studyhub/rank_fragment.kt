@@ -3,6 +3,7 @@ package ca.unb.mobiledev.studyhub
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +32,7 @@ import ca.unb.mobiledev.studyhub.FirebaseService.getTests
 import ca.unb.mobiledev.studyhub.FirebaseService.getTestTopics
 import ca.unb.mobiledev.studyhub.FirebaseService.getCourseTimeByTechnique
 import ca.unb.mobiledev.studyhub.FirebaseService.getTotalTime
+import com.google.firebase.database.core.Tag
 
 class rank_fragment : Fragment() {
 
@@ -168,27 +170,84 @@ class rank_fragment : Fragment() {
 
 
     }
+    private fun getWeakTopics(
+        course: String,
+        callback: (List<String>) -> Unit
+    ) {
+        getTests(course) { tests ->
+            if (tests.isEmpty()) {
+                callback(emptyList())
+                return@getTests
+            }
+
+            val weakTopics = mutableSetOf<String>()   // <--- avoids duplicates
+            var testsProcessed = 0
+
+            tests.forEach { testName ->
+                FirebaseService.getGrade(course, testName) { grade ->
+
+                    // Only check topics if grade < 60
+                    if (grade < 60) {
+                        getTestTopics(course, testName) { topics ->
+                            weakTopics.addAll(topics)   // add topics of weak test
+                            testsProcessed++
+
+                            if (testsProcessed == tests.size) {
+                                callback(weakTopics.toList())
+                            }
+                        }
+                    } else {
+                        // test is fine, just count it and move on
+                        testsProcessed++
+                        if (testsProcessed == tests.size) {
+                            callback(weakTopics.toList())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 
     private fun showSuggestionDialog() {
-        var message: String
-        if(r2 < 0.3){
-            message = "Not enough correlation between time studied and grade."
+        val course = selectedCourse ?: return
+
+        getWeakTopics(course) { weakTopics ->
+
+            // Build topic message
+            val topicMessage =
+                if (weakTopics.isEmpty()) {
+                    "No weak topics detected."
+                } else {
+                    "Topics to improve:\n- " + weakTopics.joinToString("\n- ")
+                }
+
+            // Build suggestion message using ONLY if/else logic
+            val suggestionMessage: String
+            Log.i("Slope", slope.toString())
+            if (r2 < 0.2) {
+                // Not enough correlation
+                suggestionMessage = "Low correlation — more data needed.\n\n$topicMessage"
+            } else {
+                // There is correlation → use slope to classify study technique
+                if (slope >= 0.67) {
+                    suggestionMessage = "Your technique is excellent!\n\n$topicMessage"
+                } else if (slope >= 0.10) {
+                    suggestionMessage = "Your technique is okay, but can improve.\n\n$topicMessage"
+                } else {
+                    suggestionMessage = "Your technique might not be effective — consider switching.\n\n$topicMessage"
+                }
+            }
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Suggestion")
+                .setMessage(suggestionMessage)
+                .setPositiveButton("Understood", null)
+                .show()
         }
-        else{
-            if(slope >= 0.67){
-                message = "Your study techniques are good, keep it up!"
-            }
-            else{
-                message = "Try to change your study technique for better study efficiency"
-            }
-        }
-        AlertDialog.Builder(requireContext())
-            .setTitle("Suggestion")
-            .setMessage(message)
-            .setPositiveButton("Understood") { _, _ ->
-            }
-            .show()
     }
+
 
     private fun showDropDown(
         anchor: View,
@@ -493,7 +552,7 @@ class rank_fragment : Fragment() {
             return
         }
 
-        val xValues = studyHoursRaw.map { it * 3600f }
+        val xValues = studyHoursRaw
         val maxX = (xValues.maxOrNull() ?: 1f)
 
         val scatterEntries = testNames.indices.map { i ->
