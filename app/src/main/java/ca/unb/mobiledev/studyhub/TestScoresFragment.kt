@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +21,9 @@ class TestScoresFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: TestScoresAdapter
     private lateinit var addTestButton: ImageButton
+
+    private lateinit var emptyTestsMessage: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,14 +45,16 @@ class TestScoresFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.testRecyclerView)
         addTestButton = view.findViewById(R.id.addTestButton)
+        emptyTestsMessage = view.findViewById(R.id.emptyTestsMessage)
+
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = TestScoresAdapter(
-            mutableListOf(),
-            onTestClick = { test -> openTestDetails(test) },
-            onEditClick = { test -> showEditTestDialog(test) },
-            onDeleteClick = { test -> confirmDeleteTest(test) }
-        )
+            mutableListOf()
+        ) { test ->
+            openTestDetails(test)
+        }
+
         recyclerView.adapter = adapter
 
         addTestButton.setOnClickListener {
@@ -102,8 +108,13 @@ class TestScoresFragment : Fragment() {
         FirebaseService.getTests(code) { testNames ->
             if (testNames.isEmpty()) {
                 adapter.setData(emptyList())
+                emptyTestsMessage.visibility = View.VISIBLE
+                recyclerView.visibility = View.GONE
                 return@getTests
             }
+
+            emptyTestsMessage.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
 
             val result = mutableListOf<TestItem>()
             var remaining = testNames.size
@@ -122,18 +133,13 @@ class TestScoresFragment : Fragment() {
         }
     }
 
+
     private fun openTestDetails(test: TestItem) {
         val code = courseCode ?: return
         (activity as? MainPage)?.openTestDetails(code, test.name)
     }
 
-    private fun showEditTestDialog(test: TestItem) {
-        // hook into your existing edit-test dialog logic
-    }
 
-    private fun confirmDeleteTest(test: TestItem) {
-        // show AlertDialog and call FirebaseService.deleteTest(...)
-    }
 
     companion object {
         private const val ARG_COURSE_CODE = "course_code"

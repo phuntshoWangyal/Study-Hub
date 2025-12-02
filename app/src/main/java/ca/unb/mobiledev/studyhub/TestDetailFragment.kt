@@ -33,7 +33,6 @@ class TestDetailFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ use the SAME keys as in companion object
         val args = requireArguments()
         courseCode = args.getString(ARG_COURSE_CODE)
             ?: error("Missing ARG_COURSE_CODE in TestDetailFragment arguments")
@@ -59,7 +58,6 @@ class TestDetailFragment : Fragment() {
         editTestButton  = view.findViewById(R.id.btnEditTest)
         deleteTestButton = view.findViewById(R.id.btnDeleteTest)
 
-        // Show test name inside the card
         testNameText.text = testName
 
         loadCourseName()
@@ -75,7 +73,6 @@ class TestDetailFragment : Fragment() {
         }
     }
 
-    // ✅ no Firebase call, no crash
     private fun loadCourseName() {
         courseTitleText.text = courseCode
     }
@@ -219,7 +216,6 @@ class TestDetailFragment : Fragment() {
 
                             var finalTestName = testName
 
-                            // rename test if needed
                             if (newName != testName) {
                                 FirebaseService.updateTest(courseCode, newName, testName)
                                 finalTestName = newName
@@ -227,13 +223,11 @@ class TestDetailFragment : Fragment() {
                                 testNameText.text = newName
                             }
 
-                            // update grade
                             FirebaseService.setGrade(courseCode, finalTestName, newGrade)
                             gradeText.text =
                                 if (newGrade == 0.0) "Grade: not entered yet"
                                 else "Grade: $newGrade"
 
-                            // 5) REPLACE topics: clear node then re-add only checked ones
                             val topicsRefForSave = FirebaseService.realtimeDb.getReference(
                                 "users/$uid/Courses/$courseCode/Tests/$finalTestName/Topics"
                             )
@@ -242,7 +236,6 @@ class TestDetailFragment : Fragment() {
                                 chosenTopics.forEach { topic ->
                                     FirebaseService.addTopic(courseCode, finalTestName, topic)
                                 }
-                                // refresh chips on main screen
                                 loadTopics()
                             }
 

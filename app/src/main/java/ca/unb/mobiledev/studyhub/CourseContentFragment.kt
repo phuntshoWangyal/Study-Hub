@@ -20,6 +20,8 @@ import android.widget.ArrayAdapter
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.CheckBox
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class CourseContentFragment : Fragment() {
 
@@ -32,7 +34,6 @@ class CourseContentFragment : Fragment() {
     private lateinit var leftArrow: ImageView
     private lateinit var rightArrow: ImageView
     private lateinit var playButton: ImageView
-    private lateinit var editCourseButton: ImageView
     private lateinit var chronometer: Chronometer
     private lateinit var noTopicMessage: TextView
 
@@ -41,10 +42,8 @@ class CourseContentFragment : Fragment() {
 
     private var courseCode: String? = null
     private var courseName: String? = null
-    private var topicId: String? = null
     private var topicName: String? = null
 
-    // total time for current topic+technique (ms), NOT including currently-running session
     private var courseTime: Long = 0L
     private val db = FirebaseFirestore.getInstance()
 
@@ -52,16 +51,22 @@ class CourseContentFragment : Fragment() {
     private var sessionCount: Int = 0
 
     private lateinit var techniques: List<String>
-    private var allTechniqueStats = mutableMapOf<String, Pair<Long, Int>>()
     private var currentTechniqueIndex: Int = 0
+
+    private fun topicPrefKey(code: String) = "selected_topic_$code"
+    private fun techniquePrefKey(code: String) = "selected_technique_$code"
+
 
     // timer state
     private var timerStarted: Boolean = false
     private var lastSavedHoursForTopic: Double = 0.0
-    private var timerStartTsMs: Long = 0L      // wall-clock start time of current session
+    private var timerStartTsMs: Long = 0L
 
     private val topics: MutableList<String> = mutableListOf()
     private var currentTopicIndexInList: Int = -1
+    private lateinit var techniqueRecyclerView: RecyclerView
+    private lateinit var techniqueAdapter: StudyTechniqueAdapter
+
 
     private val prefs by lazy {
         requireContext().getSharedPreferences("timer_pref", Context.MODE_PRIVATE)
@@ -97,6 +102,10 @@ class CourseContentFragment : Fragment() {
         chronometer    = view.findViewById(R.id.chronometer)
         noTopicMessage = view.findViewById(R.id.noTopicMessage)
         sessionCountView = view.findViewById(R.id.sessionCount)
+        techniqueRecyclerView = view.findViewById(R.id.techniqueRecyclerView)
+
+        setupStudyTechniquesList()
+
 
         val btnViewTestScores = view.findViewById<Button>(R.id.btnViewTestScores)
         btnViewTestScores.setOnClickListener {
@@ -116,7 +125,7 @@ class CourseContentFragment : Fragment() {
         techniques = listOf(
             "Your own Technique",
             "Pomodoro Technique",
-            "Feynman Technique"
+            "90 Minute Block"
         )
 
         val spinnerAdapter = ArrayAdapter(
@@ -126,7 +135,14 @@ class CourseContentFragment : Fragment() {
         )
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         techniqueSpinner.adapter = spinnerAdapter
-        currentTechniqueIndex = 0
+
+        val codeForPrefs = courseCode
+        currentTechniqueIndex = if (codeForPrefs != null) {
+            val savedIndex = prefs.getInt(techniquePrefKey(codeForPrefs), 0)
+            if (savedIndex in techniques.indices) savedIndex else 0
+        } else {
+            0
+        }
         techniqueSpinner.setSelection(currentTechniqueIndex)
 
         techniqueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -148,23 +164,19 @@ class CourseContentFragment : Fragment() {
 
                 if (position == currentTechniqueIndex) return
 
-                // before switching technique, sync time for the old one
                 if (!courseCode.isNullOrEmpty() && topicName != null) {
                     syncTimeToFirebaseIfNeeded()
                     saveStudyStatsForTechnique()
                 }
 
-                // switch
                 currentTechniqueIndex = position
 
-                // reset local counters for the new technique
                 courseTime = 0L
                 lastSavedHoursForTopic = 0.0
                 updateStudyTimeLabel(0L)
                 sessionCount = 0
                 sessionCountView.text = "0"
 
-                // load time for the new technique from DB
                 if (!courseCode.isNullOrEmpty() && topicName != null) {
                     loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
                 }
@@ -172,6 +184,7 @@ class CourseContentFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+
 
         courseCodeView.text = courseCode ?: "Course Code"
         topicNameView.text = "No topics yet"
@@ -181,7 +194,8 @@ class CourseContentFragment : Fragment() {
         showNoTopicState()
 
         if (!courseCode.isNullOrEmpty()) {
-            FirebaseService.getTopics(courseCode!!) { topicList ->
+            val codeForPrefs = courseCode!!
+            FirebaseService.getTopics(codeForPrefs) { topicList ->
                 topics.clear()
                 topics.addAll(topicList)
 
@@ -189,15 +203,20 @@ class CourseContentFragment : Fragment() {
                     showNoTopicState()
                     currentTopicIndexInList = -1
                 } else {
-                    currentTopicIndexInList = 0
-                    topicName = topics[currentTopicIndexInList]
-                    topicNameView.text = topicName
-                    loadStudyStatsForTechnique(topicName!!, currentTechniqueIndex)
+                    // 🔹 Try to restore last selected topic for this course
+                    val savedTopicName = prefs.getString(topicPrefKey(codeForPrefs), null)
+                    currentTopicIndexInList = if (savedTopicName != null && topics.contains(savedTopicName)) {
+                        topics.indexOf(savedTopicName)
+                    } else {
+                        0
+                    }
+
+                    switchToTopic(currentTopicIndexInList)
                 }
             }
         }
 
-        // restore timer (after views are ready)
+
         restoreTimerState()
 
         leftArrow.setOnClickListener {
@@ -267,7 +286,6 @@ class CourseContentFragment : Fragment() {
             if (timerStarted) {
                 // pause
                 val sessionMs = chronometerStop()
-                // courseTime already updated in chronometerStop()
                 updateStudyTimeLabel(getCurrentAccumulatedMs())
 
                 sessionCount++
@@ -298,7 +316,6 @@ class CourseContentFragment : Fragment() {
         }
     }
 
-    // ---------------- TIMER HELPERS ----------------
 
     private fun restoreTimerState() {
         courseTime = prefs.getLong("course_time_ms", 0L)
@@ -360,7 +377,6 @@ class CourseContentFragment : Fragment() {
         chronometer.base = SystemClock.elapsedRealtime()
         timerStartTsMs = 0L
 
-        // don't forget to persist totals (sessionCount is updated outside)
         persistTotals()
 
         return sessionMs
@@ -384,7 +400,39 @@ class CourseContentFragment : Fragment() {
             .apply()
     }
 
-    // --------------------------------------------------
+    private fun setupStudyTechniquesList() {
+        val techniques = listOf(
+            StudyTechnique(
+                "Pomodoro Technique",
+                "25-minute focus sessions",
+                "The Pomodoro Technique is a time management method where you break work into 25-minute focused intervals, called \"Pomodoros,\" separated by short breaks. To use it, you first select a task, set a timer for 25 minutes, and then work with intense focus on only that task until the timer rings. Once your Pomodoro is complete, you take a short, 5-minute break to rest your mind, and after completing four Pomodoros, you take a longer, more restorative break of 15–30 minutes before starting the cycle again.",
+                R.drawable.pomodoro
+            ),
+            StudyTechnique(
+                "90 Minute Block)",
+                "Focusing for 90 minutes followed by a 20-30 minute break to maximize concentration",
+                " The 90-minute block study technique (also known as the Ultradian Rhythm technique) is a time management strategy that maximizes focus by working in cycles that mirror the body's natural energy patterns. You dedicate 90 minutes to intense, focused study, completely free from distractions, where your brain is naturally most alert. This concentrated work is then followed by a 20 to 30-minute mandatory break to allow for mental recovery and consolidation of learned material, ensuring you start the next block refreshed and ready for peak performance.",
+                R.drawable.minblock
+            )
+        )
+
+        techniqueAdapter = StudyTechniqueAdapter(techniques) { technique ->
+            showTechniqueDetailsDialog(technique)
+        }
+
+        techniqueRecyclerView.layoutManager = object : LinearLayoutManager(requireContext()) {
+            override fun canScrollVertically(): Boolean = false
+        }
+        techniqueRecyclerView.adapter = techniqueAdapter
+        techniqueRecyclerView.isNestedScrollingEnabled = false
+    }
+    private fun showTechniqueDetailsDialog(technique: StudyTechnique) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(technique.title)
+            .setMessage(technique.description)
+            .setPositiveButton("OK", null)
+            .show()
+    }
 
     private fun showTopicOptionsMenu(anchor: View) {
         val popup = android.widget.PopupMenu(requireContext(), anchor)
@@ -651,6 +699,15 @@ class CourseContentFragment : Fragment() {
         if (code != null && topic != null) {
             saveStudyStatsForTechnique()
             syncTimeToFirebaseIfNeeded()
+            courseCode?.let { code ->
+                val editor = prefs.edit()
+                editor.putInt(techniquePrefKey(code), currentTechniqueIndex)
+                topicName?.let { tName ->
+                    editor.putString(topicPrefKey(code), tName)
+                }
+                editor.apply()
+            }
+
         }
     }
 

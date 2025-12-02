@@ -33,26 +33,6 @@
             android:nestedScrollingEnabled="false"
             android:clipToPadding="false" />
 
-        <!-- NEW: Study Techniques header -->
-        <TextView
-            android:id="@+id/studyTechniquesTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Study Techniques"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/holo_red_dark"
-            android:gravity="center_horizontal"
-            android:paddingTop="24dp"
-            android:paddingBottom="12dp" />
-
-        <!-- NEW: Study Techniques list -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/techniqueRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:clipToPadding="false" />
 
     </LinearLayout>
 

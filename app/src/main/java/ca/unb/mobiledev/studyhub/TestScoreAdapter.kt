@@ -10,15 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 
 class TestScoresAdapter(
     private val items: MutableList<TestItem>,
-    private val onTestClick: (TestItem) -> Unit,
-    private val onEditClick: (TestItem) -> Unit,
-    private val onDeleteClick: (TestItem) -> Unit
+    private val onTestClick: (TestItem) -> Unit
 ) : RecyclerView.Adapter<TestScoresAdapter.TestViewHolder>() {
 
     inner class TestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val nameText: TextView = itemView.findViewById(R.id.testNameText)
         val gradeText: TextView = itemView.findViewById(R.id.testGradeText)
-        val moreButton: ImageView = itemView.findViewById(R.id.testMoreButton)
     }
 
 
@@ -40,20 +37,6 @@ class TestScoresAdapter(
 
         holder.itemView.setOnClickListener {
             onTestClick(item)
-        }
-
-        // Menu
-        holder.moreButton.setOnClickListener { v ->
-            val popup = PopupMenu(v.context, v)
-            popup.menuInflater.inflate(R.menu.menu_test_item, popup.menu)
-            popup.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.action_edit_test -> { onEditClick(item); true }
-                    R.id.action_delete_test -> { onDeleteClick(item); true }
-                    else -> false
-                }
-            }
-            popup.show()
         }
     }
 

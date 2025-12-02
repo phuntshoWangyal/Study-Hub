@@ -560,23 +560,18 @@ class rank_fragment : Fragment() {
         // x used in regression (HOURS)
         val xForRegression = studyHoursRaw
 
-        // x used for chart plotting (either HOURS or SECONDS)
         val xForChart = if (useSeconds) studyHoursRaw.map { it * 3600f } else studyHoursRaw
 
-        // Regression uses hours so slope = grade / hour
         val (trendEntriesHours, r2value) = calculateLinearRegression(xForRegression, grades)
-        // Convert trend entries to chart units (hours -> seconds if necessary)
         val trendEntriesChart = trendEntriesHours.map { entry ->
             val x = if (useSeconds) entry.x * 3600f else entry.x
             Entry(x, entry.y)
         }
 
-        // Build scatter entries (chart units)
         val scatterEntries = testNames.indices.map { i ->
             Entry(xForChart[i], grades[i]).apply { data = testNames[i] }
         }
 
-        // Scatter dataset
         val scatterSet = ScatterDataSet(scatterEntries, "Study vs Grade").apply {
             color = Color.parseColor("#4285F4")
             setScatterShape(ScatterChart.ScatterShape.CIRCLE)
@@ -588,7 +583,6 @@ class rank_fragment : Fragment() {
             }
         }
 
-        // Trend line dataset (chart units)
         val trendSet = LineDataSet(trendEntriesChart, "Trend line").apply {
             color = Color.RED
             lineWidth = 2.5f
@@ -596,7 +590,6 @@ class rank_fragment : Fragment() {
             setDrawValues(false)
         }
 
-        // Combined data (scatter + line)
         val combined = CombinedData().apply {
             setData(ScatterData(scatterSet))
             setData(LineData(trendSet))
@@ -604,7 +597,6 @@ class rank_fragment : Fragment() {
 
         testChart.data = combined
 
-        // UI formatting: axis labels depend on useSeconds
         val maxChartX = (xForChart.maxOrNull() ?: 1f).coerceAtLeast(1f)
         val gran = (maxChartX / 5f).coerceAtLeast(1f)
 

@@ -31,7 +31,6 @@ class AddCourseFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
-            // Get the layout inflater
             val inflater = requireActivity().layoutInflater
             val view = inflater.inflate(R.layout.popup_course, null)
 
@@ -40,10 +39,8 @@ class AddCourseFragment : DialogFragment() {
             val addButton = view.findViewById<Button>(R.id.btn_add_course)
             val cancelButton = view.findViewById<Button>(R.id.btn_cancel)
 
-            // Inflate and set the layout for the dialog
             builder.setView(view)
 
-            // Setup button listeners
             addButton.setOnClickListener {
                 val courseCode = courseCodeInput.text.toString().trim()
                 val courseName = courseNameInput.text.toString().trim()
@@ -51,7 +48,6 @@ class AddCourseFragment : DialogFragment() {
                 if (courseCode.isNotEmpty() && courseName.isNotEmpty()) {
                     val newCourse = Course(courseCode, courseName)
                     FirebaseService.createCourse(courseCode, courseName)
-                    // Send the course back to the activity
                     listener.onCourseAdded(newCourse)
                     dialog?.dismiss()
                 } else {
