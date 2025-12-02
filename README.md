@@ -1,99 +1,104 @@
-📚 StudyHub – Smart Study Tracker
-StudyHub is an Android app designed to help students track their study habits, understand their learning efficiency, and improve their academic performance through data‑driven insights. The app allows you to create courses, add topics, log study time, take tests, and visualize how your study patterns relate to your grades.
+StudyHub – Smart Study Tracker
 
-🚀 Features
-📝 Course & Topic Management
-Create courses and customize them however you like.
+StudyHub is an Android application designed to help students track their study habits, understand their learning efficiency, and improve academic performance through data-driven insights. The app allows students to create courses, add topics, log study time, take tests, and visualize how study patterns relate to grades.
 
-Add topics under each course to organize your studying better.
+Features
+Course and Topic Management
+
+Create courses and customize them as needed.
+
+Add topics under each course to organize study material.
 
 Associate tests with one or multiple topics.
 
-Tests can belong to multiple courses if needed.
+Tests can belong to multiple courses if required.
 
-⏱️ Smart Study Time Tracking
-Track study time per topic with different techniques:
+Smart Study Time Tracking
+
+Track study time per topic using different techniques:
 
 Freestyle
 
 Pomodoro
 
-90‑minute blocks
+90-minute blocks
 
 Each study session is logged and stored for later analysis.
 
-📊 Visual Analytics
-Weekly Recap Graph
-Shows a stacked bar chart of study time for each course.
+Visual Analytics
 
-Navigate through different weeks to compare your study habits.
+Weekly Recap Graph
+
+Displays a stacked bar chart of study time for each course.
+
+Navigate between weeks to compare study habits.
 
 Study Efficiency Graph
-Scatter plot showing study time vs. test grade.
 
-Automatic linear regression:
+Scatter plot showing study time versus test grade.
 
-Calculates slope (improvement rate)
+Automatic linear regression calculates:
 
-Calculates R² (correlation strength)
+Slope (improvement rate)
 
-Trend line updates dynamically based on your data.
+R² (correlation strength)
 
-🎯 Personalized Suggestions
-Based on your tests:
+Trend line updates dynamically based on user data.
+
+Personalized Suggestions
+
+Based on test results:
 
 Detects weak topics where the student scored below 60.
 
-Removes duplicates, gives a clean list of what to revise.
+Removes duplicates for a clear list of topics to review.
 
-Uses R² and slope to determine how effective your study technique is:
+Based on regression analysis:
 
-Low R²: not enough data
+Low R² indicates insufficient data.
 
-High slope: technique is effective
+High slope suggests an effective study technique.
 
-Low slope: technique might need improvement
+Low slope suggests the technique may need improvement.
 
-🏆 Fun Ranking System
-To keep you motivated:
+Ranking System
 
-Earn EXP for every second you study.
+To keep users motivated:
 
-Ranking tiers from Iron → Bronze → Silver → Gold → Diamond.
+Earn EXP for every second spent studying.
 
-A dynamic badge and progress bar show your progress toward the next rank.
+Progress through ranking tiers (Iron → Bronze → Silver → Gold → Diamond).
 
-🧭 Workflow Overview
-Create a Course
-Add the subjects you want to track.
+Dynamic badge and progress bar show real-time progression.
 
-Add Topics
-Break your course into smaller concepts.
+Workflow Overview
 
-Start a Study Session
-Pick a study technique and begin tracking time.
+Create a course.
 
-Create Tests
-Record grades and link them to specific topics.
+Add topics to break down the subject into smaller concepts.
 
-Review Insights
+Start a study session using a preferred study technique.
 
-Weekly study recap
+Create tests and link them to specific topics.
+
+Review analytics:
+
+Weekly recap
 
 Study efficiency graph
 
-Suggestions for weak topics
+Suggested weak topics
 
 Technique effectiveness
 
-Level Up
-Earn EXP and progress through the rank system.
+Level up by earning EXP through consistent study time.
 
-🛠️ Tech Stack
+Tech Stack
+
 Kotlin
 
 Firebase Realtime Database
 
-MPAndroidChart for graphing
+MPAndroidChart
 
-Android Jetpack components
+Android Jetpack Components
