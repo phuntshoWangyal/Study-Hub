@@ -222,21 +222,19 @@ class rank_fragment : Fragment() {
                     "Topics to improve:\n- " + weakTopics.joinToString("\n- ")
                 }
 
-            // Build suggestion message using ONLY if/else logic
             val suggestionMessage: String
             Log.i("Slope", slope.toString())
-            if (r2 < 0.2) {
+            if (r2 < 0.5) {
                 // Not enough correlation
                 suggestionMessage = "Low correlation — more data needed.\n\n$topicMessage"
             } else {
-                // There is correlation → use slope to classify study technique
                 if (slope >= 0.67) {
                     suggestionMessage = "Your technique is excellent!\n\n$topicMessage"
                 } else if (slope >= 0.10) {
                     suggestionMessage = "Your technique is okay, but can improve.\n\n$topicMessage"
                 } else {
                     suggestionMessage =
-                        "Your technique might not be effective — consider switching.\n\n$topicMessage"
+                        "Your technique might not be effective, your time spend negatively affect your grade— consider switching.\n\n$topicMessage"
                 }
             }
 

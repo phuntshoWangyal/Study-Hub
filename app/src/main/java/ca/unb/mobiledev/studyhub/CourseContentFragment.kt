@@ -420,9 +420,7 @@ class CourseContentFragment : Fragment() {
             showTechniqueDetailsDialog(technique)
         }
 
-        techniqueRecyclerView.layoutManager = object : LinearLayoutManager(requireContext()) {
-            override fun canScrollVertically(): Boolean = false
-        }
+        techniqueRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         techniqueRecyclerView.adapter = techniqueAdapter
         techniqueRecyclerView.isNestedScrollingEnabled = false
     }
